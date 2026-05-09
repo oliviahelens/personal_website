@@ -3,6 +3,9 @@
 Personal site, built with [Astro](https://astro.build) and deployed to GitHub
 Pages with a custom domain (`oliviahelens.com`).
 
+Single page: bio, a list of posts pulled from Substack at build time, and
+contact links.
+
 ## Run locally
 
 ```sh
@@ -12,47 +15,22 @@ npm run build    # static output in ./dist
 npm run preview  # preview the production build
 ```
 
-## Adding a post
+## Updating the bio
 
-Drop a Markdown file into `src/content/writing/`:
+Edit `src/pages/index.astro`.
 
-```md
----
-title: "On the long now"
-date: 2026-05-09
-description: "A short note."
-draft: false
----
+## Writing
 
-Body in Markdown…
-```
-
-The `writing` index page reads the collection and lists posts sorted by date.
-Set `draft: true` to hide a post from production.
-
-## Adding a project
-
-Same idea, in `src/content/projects/`:
-
-```md
----
-title: "pySCEv"
-date: 2026-04-01
-description: "Stochastic chemical evolution in Python."
-url: "https://github.com/oliviahelens/pyscev"
----
-```
-
-## Content schema
-
-Defined in `src/content/config.ts`. Both collections share `title`, `date`,
-`description`, and `draft`. Projects also accept an optional `url`.
+Posts are pulled from `https://oliviahelens.substack.com/feed` at build time
+(`src/lib/substack.ts`). To refresh after a new Substack post, push any commit
+to `main` (or hit "Run workflow" on the deploy action) — that re-runs the
+build and re-fetches the feed.
 
 ## Deployment
 
-Pushes to `main` trigger `.github/workflows/deploy.yml`, which builds the site
-and publishes it to GitHub Pages. The custom domain is set by `public/CNAME`.
+Pushes to `main` trigger `.github/workflows/deploy.yml`, which builds the
+site and publishes it to GitHub Pages. The custom domain is set by
+`public/CNAME`.
 
-To enable: in the repo settings, under **Pages**, set the source to **GitHub
-Actions**. Add `oliviahelens.com` as the custom domain (the workflow will keep
-it via the `CNAME` file).
+To enable: in repo **Settings → Pages**, set source to **GitHub Actions**,
+and add `oliviahelens.com` as the custom domain.

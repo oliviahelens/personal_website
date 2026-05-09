@@ -1,17 +1,54 @@
 ---
 import Base from '../layouts/Base.astro';
+import { fetchSubstackPosts } from '../lib/substack';
+
+const posts = await fetchSubstackPosts();
+
+const fmt = (d: Date) =>
+  d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 ---
 <Base title="Olivia Scharfman">
   <h1>Olivia Scharfman</h1>
-  <p class="subtitle">Short bio goes here — one or two lines.</p>
 
-  <p>Placeholder landing copy. A few sentences about what you do and what
-  you're thinking about. Replace before deploy.</p>
+  <p>I have lately been spending time at the intersection of biotechnology
+  and artificial intelligence, looking at designing systems that can
+  understand, model, and defend life. I do private consulting, such as
+  strategy and scientific policy work for biodefense as well as advising
+  new companies on fundraising. I also do volunteer computational oncology
+  work at Mount Sinai.</p>
 
-  <h2>Sections</h2>
-  <ul class="index">
-    <li><a href="/writing">Writing</a><span class="desc">Essays and notes.</span></li>
-    <li><a href="/projects">Projects</a><span class="desc">Things I've made.</span></li>
-    <li><a href="/about">About</a><span class="desc">Longer bio.</span></li>
-  </ul>
+  <p>Previously, I co-founded LincSwitch Therapeutics, where I helped build
+  the founding R&amp;D team and led operations for the programmable lncRNA
+  therapeutics platform (2&ndash;7 FTEs, 0&ndash;4 provisional patents).
+  Before that, I was a Principal at The SALT Fund, investing in biology and
+  deep tech startups such as General Biological and Northwood Space.</p>
+
+  <p>I began work in biology studying Molecular Biophysics and Biochemistry
+  at Yale, where I researched lncRNA&rsquo;s role in aging and epigenetics,
+  as well as the role of aging and epigenetics in liver metabolism in the
+  Department of Pathology. Earlier projects ranged from improving neural
+  networks at DEKA Research &amp; Development and research for XPRIZE to
+  chairing the Board of Directors for SEDS-USA (Students for the Exploration
+  and Development of Space), a 501(c)3 promoting student interest in space
+  exploration.</p>
+
+  {posts.length > 0 && (
+    <>
+      <h2>Writing</h2>
+      <ul class="index">
+        {posts.map((post) => (
+          <li>
+            <a href={post.link}>{post.title}</a>
+            <span class="meta">{fmt(post.date)}</span>
+          </li>
+        ))}
+      </ul>
+    </>
+  )}
+
+  <p class="contact">
+    Find me <a href="https://x.com/OliviaHelenS">@OliviaHelenS</a> on Twitter,
+    on <a href="https://www.linkedin.com/in/oliviascharfman/">linkedin</a>,
+    or on <a href="https://github.com/oliviahelens">github</a>.
+  </p>
 </Base>
