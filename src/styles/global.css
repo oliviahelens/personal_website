@@ -1,0 +1,139 @@
+:root {
+  --measure: 34rem;
+  --bg: #fbfaf7;
+  --fg: #1a1a1a;
+  --muted: #6b6b6b;
+  --rule: #d8d4cb;
+  --link: #5a3a1a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15140f;
+    --fg: #ece7dc;
+    --muted: #8e8a80;
+    --rule: #2e2c26;
+    --link: #d6b483;
+  }
+}
+
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: local('Iowan Old Style'), local('EB Garamond'),
+    url('https://fonts.gstatic.com/s/ebgaramond/v30/SlGDmQSNjdsmc35JDF1K5FRyRQ.woff2') format('woff2');
+}
+
+* { box-sizing: border-box; }
+
+html {
+  font-size: 18px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Iowan Old Style', 'EB Garamond', Georgia, 'Times New Roman', serif;
+  line-height: 1.6;
+}
+
+main {
+  max-width: var(--measure);
+  margin: 6rem auto 8rem;
+  padding: 0 1.5rem;
+}
+
+h1, h2, h3 {
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+h1 { font-size: 1.75rem; margin: 0 0 0.5rem; }
+h2 { font-size: 1.25rem; margin: 2.5rem 0 0.75rem; }
+h3 { font-size: 1.05rem; margin: 1.75rem 0 0.5rem; }
+
+p { margin: 0 0 1.1rem; }
+
+a {
+  color: var(--link);
+  text-decoration: underline;
+  text-decoration-thickness: 0.5px;
+  text-underline-offset: 2px;
+}
+a:hover { text-decoration-thickness: 1px; }
+
+nav {
+  margin-bottom: 4rem;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+nav a { margin-right: 1.25rem; color: var(--muted); }
+nav a:hover { color: var(--fg); }
+
+.subtitle {
+  color: var(--muted);
+  font-style: italic;
+  margin-top: -0.25rem;
+  margin-bottom: 2rem;
+}
+
+ul.index {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+ul.index li {
+  padding: 1rem 0;
+  border-top: 1px solid var(--rule);
+}
+ul.index li:last-child { border-bottom: 1px solid var(--rule); }
+ul.index .meta {
+  display: block;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-variant-numeric: oldstyle-nums;
+}
+ul.index .desc {
+  display: block;
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+
+footer {
+  margin-top: 6rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+article hr {
+  border: none;
+  border-top: 1px solid var(--rule);
+  margin: 2rem 0;
+}
+
+blockquote {
+  margin: 1.5rem 0;
+  padding-left: 1rem;
+  border-left: 2px solid var(--rule);
+  color: var(--muted);
+  font-style: italic;
+}
+
+code, pre {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.9em;
+}
+pre {
+  padding: 1rem;
+  overflow-x: auto;
+  background: var(--rule);
+  border-radius: 2px;
+}
