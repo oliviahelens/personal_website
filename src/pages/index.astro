@@ -60,5 +60,14 @@ const fmt = (d: Date) =>
     <a href="https://oliviahelens.substack.com/">Substack</a>,
     <a href="https://open.spotify.com/user/12149517676?si=21244704ac1346a8">Spotify</a>,
     and <a href="https://www.goodreads.com/user/show/178728194-olivia-scharfman">Goodreads</a>.
+    You can reach me directly at <a class="js-email" data-u="b2xpdmlhc2NoYXJmbWFu" data-d="Z21haWwuY29t" href="#">[click to reveal]</a>.
   </p>
+
+  <script is:inline>
+    document.querySelectorAll('.js-email').forEach((a) => {
+      const addr = atob(a.dataset.u) + '@' + atob(a.dataset.d);
+      a.textContent = addr;
+      a.href = 'mailto:' + addr;
+    });
+  </script>
 </Base>
