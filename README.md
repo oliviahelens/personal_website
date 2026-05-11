@@ -19,18 +19,8 @@ npm run preview  # preview the production build
 
 Edit `src/pages/index.astro`.
 
-## Writing
-
-Posts are pulled from `https://oliviahelens.substack.com/feed` at build time
-(`src/lib/substack.ts`). To refresh after a new Substack post, push any commit
-to `main` (or hit "Run workflow" on the deploy action) — that re-runs the
-build and re-fetches the feed.
-
 ## Deployment
 
 Pushes to `main` trigger `.github/workflows/deploy.yml`, which builds the
 site and publishes it to GitHub Pages. The custom domain is set by
 `public/CNAME`.
-
-To enable: in repo **Settings → Pages**, set source to **GitHub Actions**,
-and add `oliviahelens.com` as the custom domain.
