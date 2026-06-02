@@ -1,0 +1,32 @@
+---
+import Base from '../layouts/Base.astro';
+import BookShelf from '../components/BookShelf.astro';
+import { fetchReadingShelves } from '../lib/goodreads';
+
+const { currentlyReading, read, favorites } = await fetchReadingShelves();
+const hasAny = currentlyReading.length + read.length + favorites.length > 0;
+const profile = 'https://www.goodreads.com/user/show/178728194-olivia-scharfman';
+---
+<Base
+  title="Reading — Olivia H. Scharfman"
+  description="What Olivia H. Scharfman is reading, has read, and loves — pulled from Goodreads."
+>
+  <h1>Reading</h1>
+
+  <p>What I&rsquo;m reading now and what has stuck with me, pulled from my
+  <a href={profile}>Goodreads</a>.</p>
+
+  <BookShelf title="Currently reading" books={currentlyReading} showRating={false} />
+  <BookShelf title="Favorites" books={favorites} />
+  <BookShelf title="Read" books={read} />
+
+  {!hasAny && (
+    <p>Nothing is loading from Goodreads right now &mdash; my shelves live
+    <a href={profile}>over here</a>.</p>
+  )}
+
+  {hasAny && (
+    <p class="contact">The full shelf is on <a href={profile}>Goodreads</a>.</p>
+  )}
+  <p class="contact"><a href="/">&larr; Home</a></p>
+</Base>

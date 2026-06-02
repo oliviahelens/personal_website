@@ -1,0 +1,39 @@
+---
+import type { Book } from '../lib/goodreads';
+
+interface Props {
+  title: string;
+  books: Book[];
+  showRating?: boolean;
+}
+
+const { title, books, showRating = true } = Astro.props;
+
+const stars = (n: number) =>
+  '★'.repeat(Math.min(n, 5)) + '☆'.repeat(Math.max(0, 5 - n));
+---
+{books.length > 0 && (
+  <section class="shelf">
+    <h2>{title}</h2>
+    <ul class="books">
+      {books.map((book) => (
+        <li class="book">
+          <a class="cover" href={book.link}>
+            {book.cover ? (
+              <img src={book.cover} alt={`Cover of ${book.title}`} loading="lazy" />
+            ) : (
+              <span class="cover-fallback">{book.title}</span>
+            )}
+          </a>
+          <a class="book-title" href={book.link}>{book.title}</a>
+          {book.author && <span class="book-author">{book.author}</span>}
+          {showRating && book.rating > 0 && (
+            <span class="rating" aria-label={`${book.rating} out of 5 stars`}>
+              {stars(book.rating)}
+            </span>
+          )}
+        </li>
+      ))}
+    </ul>
+  </section>
+)}
