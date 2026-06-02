@@ -14,12 +14,10 @@ export interface Book {
 const USER_ID = '178728194';
 
 // Goodreads retired its public API, but it still serves per-shelf RSS feeds.
-// Some accounts require the (non-secret) feed key shown on the RSS link at the
-// bottom of a shelf page, e.g.
-//   https://www.goodreads.com/review/list_rss/178728194?key=XXXX&shelf=read
-// If this page ever builds empty, copy that key here and it will be appended
-// to every feed request.
-const FEED_KEY = '';
+// FEED_KEY is the read-only feed token from the RSS link at the bottom of a
+// shelf page (https://www.goodreads.com/review/list_rss/178728194?key=...).
+// It only exposes already-public shelf data and is shared across every shelf.
+const FEED_KEY = 'JlI_XaSmRXCEneuhEgJTu93-lSW5ZfUgYJYgX6aXBFpGHLXq';
 
 interface FeedOpts {
   perPage?: number;
