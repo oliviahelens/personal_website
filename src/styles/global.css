@@ -71,24 +71,15 @@ body {
   text-underline-offset: 3px;
 }
 
-.masthead {
-  font-size: 1.15rem;
-  font-weight: 700;
-  line-height: 1.25;
-  letter-spacing: -0.01em;
-}
-
-.sidebar .nav,
 .sidebar .links {
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
 }
 
-.sidebar .nav a[aria-current='page'] { font-weight: 700; }
-
 .sidebar .links a { color: var(--muted); }
 .sidebar .links a:hover { color: var(--fg); }
+.sidebar .links a[aria-current='page'] { color: var(--fg); }
 
 .sidebar .contact {
   display: flex;
@@ -119,7 +110,6 @@ main {
     flex-basis: auto;
     width: auto;
   }
-  .sidebar .nav,
   .sidebar .links {
     flex-direction: row;
     flex-wrap: wrap;

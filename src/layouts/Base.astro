@@ -12,12 +12,9 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
 const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
 const isCurrent = (href: string) => (href.replace(/\/+$/, '') || '/') === path;
 
-const nav = [
+const links = [
   { href: '/', label: 'Home' },
   { href: '/reading', label: 'Bookshelves' },
-];
-
-const elsewhere = [
   { href: 'https://oliviahelens.substack.com/', label: 'Substack' },
   { href: 'https://x.com/OliviaHelenS', label: 'X' },
   { href: 'https://www.linkedin.com/in/oliviascharfman/', label: 'LinkedIn' },
@@ -46,15 +43,11 @@ const elsewhere = [
   <body>
     <div class="layout">
       <aside class="sidebar">
-        <a href="/" class="masthead">Olivia H.<br />Scharfman</a>
-        <nav class="nav" aria-label="Primary">
-          {nav.map((l) => (
+        <nav class="links" aria-label="Site">
+          {links.map((l) => (
             <a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a>
           ))}
         </nav>
-        <div class="links">
-          {elsewhere.map((l) => <a href={l.href}>{l.label}</a>)}
-        </div>
         <div class="contact">
           <span class="contact-head">Contact</span>
           <span class="contact-item">Email: [firstname][lastname]@gmail.com</span>
