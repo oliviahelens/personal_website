@@ -21,6 +21,7 @@ const FEED_KEY = 'JlI_XaSmRXCEneuhEgJTu93-lSW5ZfUgYJYgX6aXBFpGHLXq';
 
 interface FeedOpts {
   perPage?: number;
+  page?: number;
   sort?: string; // e.g. 'date_read', 'date_added'
   order?: 'a' | 'd';
 }
@@ -28,6 +29,7 @@ interface FeedOpts {
 const feedUrl = (shelf: string, opts: FeedOpts = {}) => {
   const params = new URLSearchParams({ shelf });
   if (opts.perPage) params.set('per_page', String(opts.perPage));
+  if (opts.page) params.set('page', String(opts.page));
   if (opts.sort) params.set('sort', opts.sort);
   if (opts.order) params.set('order', opts.order);
   if (FEED_KEY) params.set('key', FEED_KEY);
@@ -107,10 +109,30 @@ const byReadDesc = (a: Book, b: Book) =>
 const byAddedDesc = (a: Book, b: Book) =>
   (b.dateAdded?.valueOf() ?? 0) - (a.dateAdded?.valueOf() ?? 0);
 
-// Cap the (potentially long) finished list so the page stays light. 100 is
-// also the most Goodreads returns in a single RSS request, so this shows the
-// 100 most recently read without needing to paginate the feed.
-const READ_LIMIT = 100;
+// Goodreads serves at most 100 items per RSS request, so walk the shelf page
+// by page until a short (or empty) page, then stop. The early break also means
+// a mid-walk fetch failure just ends the list rather than dropping everything.
+const PER_PAGE = 100;
+const MAX_PAGES = 20; // safety ceiling (~2000 books) against an endless loop
+
+async function fetchShelfAll(
+  shelf: string,
+  opts: Omit<FeedOpts, 'perPage' | 'page'> = {},
+): Promise<Book[]> {
+  const all: Book[] = [];
+  const seen = new Set<string>();
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const batch = await fetchShelf(shelf, { ...opts, perPage: PER_PAGE, page });
+    for (const book of batch) {
+      const key = book.link || `${book.title}|${book.author}`;
+      if (seen.has(key)) continue; // guard against overlap across pages
+      seen.add(key);
+      all.push(book);
+    }
+    if (batch.length < PER_PAGE) break; // reached the last page
+  }
+  return all;
+}
 
 export interface ReadingShelves {
   currentlyReading: Book[];
@@ -121,13 +143,13 @@ export interface ReadingShelves {
 export async function fetchReadingShelves(): Promise<ReadingShelves> {
   const [currentlyReading, read, favorites] = await Promise.all([
     fetchShelf('currently-reading', { perPage: 50, sort: 'date_added', order: 'd' }),
-    fetchShelf('read', { perPage: 100, sort: 'date_read', order: 'd' }),
+    fetchShelfAll('read', { sort: 'date_read', order: 'd' }),
     fetchShelf('favorites', { perPage: 100, sort: 'date_added', order: 'd' }),
   ]);
 
   return {
     currentlyReading: currentlyReading.sort(byAddedDesc),
-    read: read.sort(byReadDesc).slice(0, READ_LIMIT),
+    read: read.sort(byReadDesc),
     favorites: favorites.sort(byReadDesc),
   };
 }
