@@ -1,11 +1,5 @@
 ---
 import Base from '../layouts/Base.astro';
-import { fetchSubstackPosts } from '../lib/substack';
-
-const posts = await fetchSubstackPosts();
-
-const fmt = (d: Date) =>
-  d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 ---
 <Base
   title="Olivia H. Scharfman"
@@ -37,18 +31,4 @@ const fmt = (d: Date) =>
   and chairing the Board of Directors for <a href="https://seds.org/">SEDS-USA</a>
   (Students for the Exploration and Development of Space), a 501(c)3
   promoting student interest in space exploration.</p>
-
-  {posts.length > 0 && (
-    <>
-      <h2>Writing</h2>
-      <ul class="index">
-        {posts.map((post) => (
-          <li>
-            <a href={post.link}>{post.title}</a>
-            <span class="meta">{fmt(post.date)}</span>
-          </li>
-        ))}
-      </ul>
-    </>
-  )}
 </Base>

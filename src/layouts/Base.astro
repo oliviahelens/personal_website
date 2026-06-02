@@ -24,7 +24,6 @@ const elsewhere = [
   { href: 'https://github.com/oliviahelens', label: 'GitHub' },
   { href: 'https://www.lesswrong.com/users/olivia-scharfman', label: 'LessWrong' },
   { href: 'https://open.spotify.com/user/12149517676?si=21244704ac1346a8', label: 'Spotify' },
-  { href: 'https://www.goodreads.com/user/show/178728194-olivia-scharfman', label: 'Goodreads' },
 ];
 ---
 <!doctype html>
@@ -36,7 +35,6 @@ const elsewhere = [
     {description && <meta name="description" content={description} />}
     <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="alternate" type="application/rss+xml" title="Olivia H. Scharfman" href="/rss.xml" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
@@ -57,7 +55,11 @@ const elsewhere = [
         <div class="links">
           {elsewhere.map((l) => <a href={l.href}>{l.label}</a>)}
         </div>
-        <p class="email">[firstname][lastname]@gmail.com</p>
+        <div class="contact">
+          <span class="contact-head">Contact</span>
+          <span class="contact-item">Email: [firstname][lastname]@gmail.com</span>
+          <span class="contact-item">Signal: Olivia.01</span>
+        </div>
       </aside>
       <main>
         <slot />

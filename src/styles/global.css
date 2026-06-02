@@ -90,8 +90,13 @@ body {
 .sidebar .links a { color: var(--muted); }
 .sidebar .links a:hover { color: var(--fg); }
 
-.email {
-  margin: 0;
+.sidebar .contact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.contact-head { font-weight: 700; }
+.contact-item {
   color: var(--muted);
   font-size: 0.82rem;
   line-height: 1.4;
@@ -144,23 +149,6 @@ a {
   text-underline-offset: 3px;
 }
 a:hover { text-decoration-thickness: 1.5px; }
-
-ul.index {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 1.25rem;
-}
-ul.index li {
-  margin: 0.4rem 0;
-}
-ul.index .meta {
-  color: var(--muted);
-  font-size: 0.9rem;
-  margin-left: 0.5rem;
-  font-variant-numeric: oldstyle-nums;
-}
-
-.contact { margin-top: 2rem; }
 
 .shelf { margin: 2.5rem 0; }
 
