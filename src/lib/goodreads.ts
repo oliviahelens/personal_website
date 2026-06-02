@@ -107,8 +107,10 @@ const byReadDesc = (a: Book, b: Book) =>
 const byAddedDesc = (a: Book, b: Book) =>
   (b.dateAdded?.valueOf() ?? 0) - (a.dateAdded?.valueOf() ?? 0);
 
-// Cap the (potentially long) finished list so the page stays light.
-const READ_LIMIT = 60;
+// Cap the (potentially long) finished list so the page stays light. 100 is
+// also the most Goodreads returns in a single RSS request, so this shows the
+// 100 most recently read without needing to paginate the feed.
+const READ_LIMIT = 100;
 
 export interface ReadingShelves {
   currentlyReading: Book[];
