@@ -8,6 +8,24 @@ interface Props {
 
 const { title, description } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+
+const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const isCurrent = (href: string) => (href.replace(/\/+$/, '') || '/') === path;
+
+const nav = [
+  { href: '/', label: 'Home' },
+  { href: '/reading', label: 'Bookshelves' },
+];
+
+const elsewhere = [
+  { href: 'https://oliviahelens.substack.com/', label: 'Substack' },
+  { href: 'https://x.com/OliviaHelenS', label: 'X' },
+  { href: 'https://www.linkedin.com/in/oliviascharfman/', label: 'LinkedIn' },
+  { href: 'https://github.com/oliviahelens', label: 'GitHub' },
+  { href: 'https://www.lesswrong.com/users/olivia-scharfman', label: 'LessWrong' },
+  { href: 'https://open.spotify.com/user/12149517676?si=21244704ac1346a8', label: 'Spotify' },
+  { href: 'https://www.goodreads.com/user/show/178728194-olivia-scharfman', label: 'Goodreads' },
+];
 ---
 <!doctype html>
 <html lang="en">
@@ -28,8 +46,22 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
     <meta name="twitter:site" content="@OliviaHelenS" />
   </head>
   <body>
-    <main>
-      <slot />
-    </main>
+    <div class="layout">
+      <aside class="sidebar">
+        <a href="/" class="masthead">Olivia H.<br />Scharfman</a>
+        <nav class="nav" aria-label="Primary">
+          {nav.map((l) => (
+            <a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a>
+          ))}
+        </nav>
+        <div class="links">
+          {elsewhere.map((l) => <a href={l.href}>{l.label}</a>)}
+        </div>
+        <p class="email">[firstname][lastname]@gmail.com</p>
+      </aside>
+      <main>
+        <slot />
+      </main>
+    </div>
   </body>
 </html>
