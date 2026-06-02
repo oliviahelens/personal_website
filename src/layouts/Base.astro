@@ -15,6 +15,7 @@ const isCurrent = (href: string) => (href.replace(/\/+$/, '') || '/') === path;
 const links = [
   { href: '/', label: 'Home' },
   { href: '/reading', label: 'Bookshelves' },
+  { href: '/contact', label: 'Contact' },
   { href: 'https://oliviahelens.substack.com/', label: 'Substack' },
   { href: 'https://x.com/OliviaHelenS', label: 'X' },
   { href: 'https://www.linkedin.com/in/oliviascharfman/', label: 'LinkedIn' },
@@ -48,11 +49,6 @@ const links = [
             <a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a>
           ))}
         </nav>
-        <div class="contact">
-          <span class="contact-head">Contact</span>
-          <span class="contact-item">Email: [firstname][lastname]@gmail.com</span>
-          <span class="contact-item">Signal: Olivia.01</span>
-        </div>
       </aside>
       <main>
         <slot />
