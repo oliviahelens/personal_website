@@ -87,3 +87,64 @@ ul.index .meta {
 }
 
 .contact { margin-top: 2rem; }
+
+.shelf { margin: 2.5rem 0; }
+
+ul.books {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 1.6rem 1.25rem;
+}
+
+.book { display: flex; flex-direction: column; }
+
+.book .cover { display: block; text-decoration: none; }
+
+.book .cover img,
+.book .cover-fallback {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  border-radius: 2px;
+  background: var(--rule);
+}
+
+.book .cover img {
+  object-fit: cover;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+}
+
+.book .cover-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem;
+  font-size: 0.7rem;
+  line-height: 1.3;
+  text-align: center;
+  color: var(--muted);
+}
+
+.book-title {
+  margin-top: 0.5rem;
+  font-size: 0.82rem;
+  line-height: 1.25;
+  text-decoration: none;
+}
+.book-title:hover { text-decoration: underline; }
+
+.book-author {
+  margin-top: 0.1rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.25;
+}
+
+.book .rating {
+  margin-top: 0.2rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+}
