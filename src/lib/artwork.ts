@@ -3,12 +3,15 @@
 // This mirrors the Goodreads integration in goodreads.ts: we fetch on build and
 // fail soft to an empty list, so an upstream hiccup never breaks the page. The
 // curated list of pieces lives in favorites.ts; this file just knows how to turn
-// a reference into a displayable Artwork from one of four sources:
+// a reference into a displayable Artwork from one of these sources:
 //
 //   'met'       — The Metropolitan Museum of Art Collection API (public domain)
 //   'aic'       — The Art Institute of Chicago API (public domain)
 //   'wikipedia' — a work's Wikipedia article, for public-domain pieces the two
 //                 museums above don't hold (image is hosted on Wikimedia Commons)
+//   'direct'    — an exact image URL hosted elsewhere (e.g. a Commons "Original
+//                 file" link). The surest way to pin a specific piece or crop:
+//                 nothing is fetched at build, the browser loads it at view time.
 //   'local'     — a self-hosted image under /public, for in-copyright works we
 //                 can't pull a free image for. Skipped until the file exists.
 
@@ -26,7 +29,7 @@ export interface Artwork {
   credit: string;
 }
 
-export type Source = 'met' | 'aic' | 'wikipedia' | 'local';
+export type Source = 'met' | 'aic' | 'wikipedia' | 'direct' | 'local';
 
 export interface FavoriteRef {
   artist: string; // display artist; also a search hint for the museum sources
@@ -39,7 +42,8 @@ export interface FavoriteRef {
   // wikipedia: the article title for the work (redirects are followed).
   page?: string;
 
-  // local: path under /public, e.g. '/artwork/escher-relativity.jpg'.
+  // direct: an absolute image URL. local: a path under /public, e.g.
+  // '/artwork/escher-relativity.jpg'.
   image?: string;
 
   // display overrides — authoritative for wikipedia/local, fallback for museums.
@@ -227,6 +231,23 @@ async function resolveWikipedia(ref: FavoriteRef): Promise<Artwork | null> {
 // stays hidden until the file is actually added, so we can scaffold it now.
 // ---------------------------------------------------------------------------
 
+// Direct — an exact image URL hosted elsewhere (e.g. a Wikimedia Commons
+// "Original file" link). Nothing to fetch at build; the browser loads it at view
+// time, like the museum images. The most reliable way to pin a specific piece.
+function resolveDirect(ref: FavoriteRef): Artwork | null {
+  if (!ref.image) return null;
+  return {
+    title: ref.title || 'Untitled',
+    artist: ref.artist,
+    date: ref.date || '',
+    image: ref.image,
+    link: ref.link || '',
+    source: '',
+    medium: '',
+    credit: '',
+  };
+}
+
 function resolveLocal(ref: FavoriteRef): Artwork | null {
   if (!ref.image) return null;
   const file = resolvePath(process.cwd(), 'public', ref.image.replace(/^\/+/, ''));
@@ -257,6 +278,8 @@ async function resolve(ref: FavoriteRef): Promise<Artwork | null> {
         return await resolveAic(ref);
       case 'wikipedia':
         return await resolveWikipedia(ref);
+      case 'direct':
+        return resolveDirect(ref);
       case 'local':
         return resolveLocal(ref);
     }
