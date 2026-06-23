@@ -11,11 +11,19 @@ const { artworks } = Astro.props;
   <div class="gallery">
     {artworks.map((art) => (
       <figure class="artwork">
-        <a class="art-link" href={art.link}>
+        {art.link ? (
+          <a class="art-link" href={art.link}>
+            <img src={art.image} alt={`${art.title} — ${art.artist}`} loading="lazy" />
+          </a>
+        ) : (
           <img src={art.image} alt={`${art.title} — ${art.artist}`} loading="lazy" />
-        </a>
+        )}
         <figcaption>
-          <a class="art-title" href={art.link}>{art.title}</a>
+          {art.link ? (
+            <a class="art-title" href={art.link}>{art.title}</a>
+          ) : (
+            <span class="art-title">{art.title}</span>
+          )}
           <span class="art-meta">{art.artist}{art.date && `, ${art.date}`}</span>
         </figcaption>
       </figure>

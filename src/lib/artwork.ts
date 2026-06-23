@@ -1,42 +1,54 @@
-// Favorite artworks, pulled at build time from open-access museum collections.
+// Favorite artworks, pulled at build time from open collections.
 //
 // This mirrors the Goodreads integration in goodreads.ts: we fetch on build and
-// fail soft to an empty list, so a museum API hiccup never breaks the page. The
+// fail soft to an empty list, so an upstream hiccup never breaks the page. The
 // curated list of pieces lives in favorites.ts; this file just knows how to turn
-// a reference (a museum + an id or search query) into a displayable Artwork.
+// a reference into a displayable Artwork from one of four sources:
 //
-// Two open-access sources are supported, both free and key-less:
-//   - 'met' — The Metropolitan Museum of Art Collection API
-//   - 'aic' — The Art Institute of Chicago API
-// Both only expose works the museum has digitized and released to the public
-// domain, which is why 20th-century / in-copyright artists can't come through
-// here and need a different image source.
+//   'met'       — The Metropolitan Museum of Art Collection API (public domain)
+//   'aic'       — The Art Institute of Chicago API (public domain)
+//   'wikipedia' — a work's Wikipedia article, for public-domain pieces the two
+//                 museums above don't hold (image is hosted on Wikimedia Commons)
+//   'local'     — a self-hosted image under /public, for in-copyright works we
+//                 can't pull a free image for. Skipped until the file exists.
+
+import { existsSync } from 'node:fs';
+import { resolve as resolvePath } from 'node:path';
 
 export interface Artwork {
   title: string;
   artist: string;
   date: string; // display date, e.g. "1859" or "1830/33"
-  image: string; // display image URL, hot-linked from the museum CDN
-  link: string; // museum object page
+  image: string; // display image URL
+  link: string; // page for the work; empty means render without a link
   source: string; // human label, e.g. "The Met"
   medium: string;
   credit: string;
 }
 
-export type Source = 'met' | 'aic';
+export type Source = 'met' | 'aic' | 'wikipedia' | 'local';
 
 export interface FavoriteRef {
-  artist: string; // used for display fallback and as a search hint
+  artist: string; // display artist; also a search hint for the museum sources
   source: Source;
-  id?: number; // exact museum object id — most reliable when known
-  query?: string; // search text (usually a title) when no id is known
-  note?: string; // optional curatorial note, not rendered
-}
 
-const SOURCE_LABEL: Record<Source, string> = {
-  met: 'The Met',
-  aic: 'Art Institute of Chicago',
-};
+  // met / aic: pin an exact object with `id`, else resolve `query` by search.
+  id?: number;
+  query?: string;
+
+  // wikipedia: the article title for the work (redirects are followed).
+  page?: string;
+
+  // local: path under /public, e.g. '/artwork/escher-relativity.jpg'.
+  image?: string;
+
+  // display overrides — authoritative for wikipedia/local, fallback for museums.
+  title?: string;
+  date?: string;
+  link?: string; // optional outbound link for local pieces
+
+  note?: string; // curatorial note, not rendered
+}
 
 async function getJson<T>(url: string): Promise<T | null> {
   try {
@@ -53,8 +65,7 @@ async function getJson<T>(url: string): Promise<T | null> {
 }
 
 // ---------------------------------------------------------------------------
-// The Metropolitan Museum of Art
-// https://metmuseum.github.io/
+// The Metropolitan Museum of Art — https://metmuseum.github.io/
 // ---------------------------------------------------------------------------
 
 const MET = 'https://collectionapi.metmuseum.org/public/collection/v1';
@@ -76,12 +87,12 @@ function metToArtwork(o: MetObject, ref: FavoriteRef): Artwork | null {
   const image = o.primaryImageSmall || o.primaryImage;
   if (!image) return null; // nothing to show
   return {
-    title: o.title || ref.query || 'Untitled',
+    title: o.title || ref.title || ref.query || 'Untitled',
     artist: o.artistDisplayName || ref.artist,
-    date: o.objectDate || '',
+    date: o.objectDate || ref.date || '',
     image,
     link: o.objectURL || `https://www.metmuseum.org/art/collection/search/${o.objectID}`,
-    source: SOURCE_LABEL.met,
+    source: 'The Met',
     medium: o.medium || '',
     credit: o.creditLine || '',
   };
@@ -110,8 +121,7 @@ async function resolveMet(ref: FavoriteRef): Promise<Artwork | null> {
 }
 
 // ---------------------------------------------------------------------------
-// The Art Institute of Chicago
-// https://api.artic.edu/docs/
+// The Art Institute of Chicago — https://api.artic.edu/docs/
 // ---------------------------------------------------------------------------
 
 const AIC = 'https://api.artic.edu/api/v1/artworks';
@@ -136,12 +146,12 @@ function aicImage(imageId: string): string {
 function aicToArtwork(a: AicArtwork, ref: FavoriteRef): Artwork | null {
   if (!a.image_id) return null;
   return {
-    title: a.title || ref.query || 'Untitled',
+    title: a.title || ref.title || ref.query || 'Untitled',
     artist: a.artist_title || ref.artist,
-    date: a.date_display || '',
+    date: a.date_display || ref.date || '',
     image: aicImage(a.image_id),
     link: `https://www.artic.edu/artworks/${a.id}`,
-    source: SOURCE_LABEL.aic,
+    source: 'Art Institute of Chicago',
     medium: a.medium_display || '',
     credit: a.credit_line || '',
   };
@@ -165,12 +175,93 @@ async function resolveAic(ref: FavoriteRef): Promise<Artwork | null> {
 }
 
 // ---------------------------------------------------------------------------
+// Wikipedia / Wikimedia Commons — for public-domain works not in the museums.
+// We ask the MediaWiki API for the article's lead image (the work itself) at a
+// grid-friendly size, and link back to the article.
+// ---------------------------------------------------------------------------
+
+const WIKI = 'https://en.wikipedia.org/w/api.php';
+
+interface WikiPage {
+  title: string;
+  fullurl?: string;
+  thumbnail?: { source: string };
+  original?: { source: string };
+}
+
+async function resolveWikipedia(ref: FavoriteRef): Promise<Artwork | null> {
+  const article = ref.page || ref.query;
+  if (!article) return null;
+
+  const params = new URLSearchParams({
+    action: 'query',
+    format: 'json',
+    redirects: '1',
+    prop: 'pageimages|info',
+    inprop: 'url',
+    piprop: 'thumbnail|original',
+    pithumbsize: '800',
+    titles: article,
+  });
+  const res = await getJson<{ query?: { pages?: Record<string, WikiPage> } }>(
+    `${WIKI}?${params}`,
+  );
+  const page = Object.values(res?.query?.pages ?? {})[0];
+  const image = page?.thumbnail?.source || page?.original?.source;
+  if (!image) return null;
+
+  return {
+    title: ref.title || page?.title || article,
+    artist: ref.artist,
+    date: ref.date || '',
+    image,
+    link: page?.fullurl || `https://en.wikipedia.org/wiki/${encodeURIComponent(article)}`,
+    source: 'Wikimedia Commons',
+    medium: '',
+    credit: '',
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Local — a self-hosted image under /public, for in-copyright works. The entry
+// stays hidden until the file is actually added, so we can scaffold it now.
+// ---------------------------------------------------------------------------
+
+function resolveLocal(ref: FavoriteRef): Artwork | null {
+  if (!ref.image) return null;
+  const file = resolvePath(process.cwd(), 'public', ref.image.replace(/^\/+/, ''));
+  if (!existsSync(file)) {
+    console.warn(`[artwork] local image not added yet, skipping: ${ref.image} (${ref.artist})`);
+    return null;
+  }
+  return {
+    title: ref.title || 'Untitled',
+    artist: ref.artist,
+    date: ref.date || '',
+    image: ref.image,
+    link: ref.link || '',
+    source: '',
+    medium: '',
+    credit: '',
+  };
+}
+
+// ---------------------------------------------------------------------------
 
 async function resolve(ref: FavoriteRef): Promise<Artwork | null> {
   try {
-    return ref.source === 'met' ? await resolveMet(ref) : await resolveAic(ref);
+    switch (ref.source) {
+      case 'met':
+        return await resolveMet(ref);
+      case 'aic':
+        return await resolveAic(ref);
+      case 'wikipedia':
+        return await resolveWikipedia(ref);
+      case 'local':
+        return resolveLocal(ref);
+    }
   } catch (err) {
-    console.warn(`[artwork] could not resolve "${ref.query ?? ref.id}" (${ref.artist}): ${err}`);
+    console.warn(`[artwork] could not resolve a piece for ${ref.artist}: ${err}`);
     return null;
   }
 }
