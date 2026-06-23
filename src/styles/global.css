@@ -189,3 +189,46 @@ ul.books {
   font-size: 0.72rem;
   letter-spacing: 0.06em;
 }
+
+/* Gallery — a simple masonry of artwork that respects each piece's aspect ratio. */
+.gallery {
+  columns: 16rem;
+  column-gap: 1.5rem;
+  margin: 2.5rem 0;
+}
+
+.artwork {
+  break-inside: avoid;
+  margin: 0 0 1.75rem;
+}
+
+.artwork .art-link { display: block; }
+
+.artwork img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 2px;
+  background: var(--rule);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
+}
+
+.artwork figcaption {
+  margin-top: 0.5rem;
+  line-height: 1.3;
+}
+
+.art-title {
+  display: block;
+  font-style: italic;
+  font-size: 0.86rem;
+  text-decoration: none;
+}
+.art-title:hover { text-decoration: underline; }
+
+.art-meta {
+  display: block;
+  margin-top: 0.1rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}

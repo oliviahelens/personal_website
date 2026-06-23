@@ -1,0 +1,26 @@
+---
+import Base from '../layouts/Base.astro';
+import Gallery from '../components/Gallery.astro';
+import { fetchGallery } from '../lib/artwork';
+import { HISTORICAL } from '../lib/favorites';
+
+const artworks = await fetchGallery(HISTORICAL);
+---
+<Base
+  title="Gallery — Olivia H. Scharfman"
+  description="A few works of art Olivia H. Scharfman loves, pulled from open-access museum collections."
+>
+  <h1>Gallery</h1>
+
+  <p>A few pieces I keep coming back to, pulled from the open-access collections
+  at <a href="https://www.metmuseum.org/">The Met</a> and the <a
+  href="https://www.artic.edu/">Art Institute of Chicago</a>. Each links back to
+  the museum’s page for the work.</p>
+
+  <Gallery artworks={artworks} />
+
+  {artworks.length === 0 && (
+    <p>The gallery isn’t loading right now &mdash; it pulls from the museums’
+    open-access APIs at build time, and one of them may be having a moment.</p>
+  )}
+</Base>
