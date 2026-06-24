@@ -39,7 +39,7 @@ export const ARTISTS: ArtistRef[] = [
   {
     name: 'Gustav Klimt',
     works: [
-      { title: 'Mother and Child', year: '1905', source: 'commons', file: 'The_Three_Ages_of_Woman.jpg', note: 'full painting — Commons has no isolated mother-and-child crop' },
+      { title: 'The Three Ages of Woman', year: '1905', source: 'commons', file: 'The_Three_Ages_of_Woman.jpg' },
       { title: 'The Kiss', year: '1907–08', source: 'commons', file: 'The_Kiss_-_Gustav_Klimt_-_Google_Cultural_Institute.jpg' },
       { title: 'Death and Life', year: '1908–1915', source: 'commons', file: 'Gustav_Klimt_-_Death_and_Life_-_Google_Art_Project.jpg', note: 'Google Art Project file, not the ~419MB scan' },
     ],

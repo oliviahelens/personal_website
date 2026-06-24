@@ -58,15 +58,27 @@ export interface ArtistRef {
   works: WorkRef[];
 }
 
-async function getJson<T>(url: string): Promise<T | null> {
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
+// Wikimedia rate-limits bursts and wants a descriptive User-Agent, so we retry
+// on 429/503 with backoff and keep build-time concurrency low (see mapPool).
+async function getJson<T>(url: string, attempt = 0): Promise<T | null> {
   try {
     const res = await fetch(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; oliviahelens.com/1.0)' },
-      signal: AbortSignal.timeout(15000),
+      headers: { 'User-Agent': 'oliviahelens-gallery/1.0 (https://oliviahelens.com)' },
+      signal: AbortSignal.timeout(20000),
     });
+    if ((res.status === 429 || res.status === 503) && attempt < 4) {
+      await sleep(700 * 2 ** attempt);
+      return getJson<T>(url, attempt + 1);
+    }
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return (await res.json()) as T;
   } catch (err) {
+    if (attempt < 2) {
+      await sleep(500 * 2 ** attempt);
+      return getJson<T>(url, attempt + 1);
+    }
     console.warn(`[artwork] fetch failed for ${url}: ${err}`);
     return null;
   }
@@ -358,13 +370,25 @@ async function resolveWork(work: WorkRef, artist: string): Promise<Artwork | nul
   }
 }
 
-// Resolve every work across every artist in parallel, drop the ones that didn't
-// come back, and keep the curated order (artist order, works within each artist).
+// Run `fn` over `items` with at most `limit` in flight at once, preserving order.
+async function mapPool<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
+  const out = new Array<R>(items.length);
+  let next = 0;
+  const worker = async () => {
+    while (next < items.length) {
+      const i = next++;
+      out[i] = await fn(items[i]);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return out;
+}
+
+// Resolve every work, drop the ones that didn't come back, and keep the curated
+// order. Concurrency is capped so we don't burst the Commons API (which rate-
+// limits and would otherwise fail the whole batch at once).
 export async function fetchGallery(artists: ArtistRef[]): Promise<Artwork[]> {
-  const jobs: Promise<Artwork | null>[] = [];
-  for (const artist of artists) {
-    for (const work of artist.works) jobs.push(resolveWork(work, artist.name));
-  }
-  const settled = await Promise.all(jobs);
+  const jobs = artists.flatMap((artist) => artist.works.map((work) => ({ work, artist: artist.name })));
+  const settled = await mapPool(jobs, 4, ({ work, artist }) => resolveWork(work, artist));
   return settled.filter((a): a is Artwork => a !== null);
 }
