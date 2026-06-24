@@ -29,7 +29,7 @@ export interface Artwork {
   panels?: { image: string; title: string }[]; // multi-panel set → sub-grid
 }
 
-export type Source = 'commons' | 'met' | 'aic' | 'wikipedia' | 'direct' | 'local';
+export type Source = 'commons' | 'met' | 'aic' | 'wikipedia' | 'direct' | 'local' | 'link';
 
 export interface Panel {
   file: string; // Commons File: title
@@ -41,6 +41,8 @@ export interface WorkRef {
   year?: string;
   source: Source;
   file?: string; // commons File: title
+  search?: string; // commons file search — best-effort top hit, review on preview
+  category?: string; // commons Category: for a multi-panel set
   id?: number; // met / aic object id
   query?: string; // met / aic search text
   page?: string; // wikipedia article title
@@ -83,57 +85,79 @@ interface ImageInfo {
   descriptionurl?: string;
 }
 
-async function commonsThumb(file: string, width: number): Promise<{ image: string; link: string } | null> {
-  const title = file.startsWith('File:') ? file : `File:${file}`;
-  const params = new URLSearchParams({
-    action: 'query',
-    format: 'json',
-    redirects: '1',
-    prop: 'imageinfo',
-    iiprop: 'url',
-    iiurlwidth: String(width),
-    titles: title,
-  });
-  const res = await getJson<{ query?: { pages?: Record<string, { imageinfo?: ImageInfo[] }> } }>(
-    `${COMMONS}?${params}`,
-  );
-  const info = Object.values(res?.query?.pages ?? {})[0]?.imageinfo?.[0];
+interface ImageInfoPage {
+  index?: number; // generator queries add a rank
+  imageinfo?: ImageInfo[];
+}
+
+type CommonsResp = { query?: { pages?: Record<string, ImageInfoPage> } };
+
+// Pages come back keyed by id; sort by the generator `index` so the top hit wins.
+function rankedPages(res: CommonsResp | null): ImageInfoPage[] {
+  return Object.values(res?.query?.pages ?? {}).sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
+}
+
+function firstImage(pages: ImageInfoPage[]): { image: string; link: string } | null {
+  const info = pages[0]?.imageinfo?.[0];
   const image = info?.thumburl || info?.url;
-  if (!image) return null;
-  return { image, link: info?.descriptionurl || '' };
+  return image ? { image, link: info?.descriptionurl || '' } : null;
+}
+
+async function commonsThumb(file: string, width: number): Promise<{ image: string; link: string } | null> {
+  const params = new URLSearchParams({
+    action: 'query', format: 'json', redirects: '1',
+    prop: 'imageinfo', iiprop: 'url', iiurlwidth: String(width),
+    titles: file.startsWith('File:') ? file : `File:${file}`,
+  });
+  return firstImage(rankedPages(await getJson<CommonsResp>(`${COMMONS}?${params}`)));
+}
+
+// Best-effort: the top file-namespace search hit on Commons. For works whose
+// exact file wasn't pinned — these should be eyeballed on the preview build.
+async function commonsSearch(query: string, width: number): Promise<{ image: string; link: string } | null> {
+  const params = new URLSearchParams({
+    action: 'query', format: 'json',
+    generator: 'search', gsrsearch: query, gsrnamespace: '6', gsrlimit: '1',
+    prop: 'imageinfo', iiprop: 'url', iiurlwidth: String(width),
+  });
+  return firstImage(rankedPages(await getJson<CommonsResp>(`${COMMONS}?${params}`)));
+}
+
+// The file members of a Commons category, as panels for a multi-panel set.
+async function commonsCategoryPanels(category: string, width: number): Promise<{ image: string; title: string }[]> {
+  const params = new URLSearchParams({
+    action: 'query', format: 'json',
+    generator: 'categorymembers', gcmtype: 'file', gcmlimit: '8',
+    gcmtitle: category.startsWith('Category:') ? category : `Category:${category}`,
+    prop: 'imageinfo', iiprop: 'url', iiurlwidth: String(width),
+  });
+  return rankedPages(await getJson<CommonsResp>(`${COMMONS}?${params}`))
+    .map((p) => p.imageinfo?.[0]?.thumburl || p.imageinfo?.[0]?.url)
+    .filter((img): img is string => !!img)
+    .map((image) => ({ image, title: '' }));
 }
 
 async function resolveCommons(work: WorkRef, artist: string): Promise<Artwork | null> {
-  // Multi-panel set: resolve each panel to its own thumbnail for a sub-grid.
-  if (work.panels?.length) {
-    const panels: { image: string; title: string }[] = [];
-    for (const p of work.panels) {
-      const r = await commonsThumb(p.file, 700);
-      if (r) panels.push({ image: r.image, title: p.title || '' });
-    }
+  const base = { title: work.title, artist, date: work.year || '', source: 'Wikimedia Commons' };
+
+  // Multi-panel set — from a category, or from explicit panel files.
+  if (work.category || work.panels?.length) {
+    const panels = work.category
+      ? await commonsCategoryPanels(work.category, 700)
+      : (await Promise.all((work.panels ?? []).map((p) => commonsThumb(p.file, 700)))).flatMap((r) =>
+          r ? [{ image: r.image, title: '' }] : [],
+        );
     if (!panels.length) return null;
-    return {
-      title: work.title,
-      artist,
-      date: work.year || '',
-      image: panels[0].image,
-      link: work.link || '',
-      source: 'Wikimedia Commons',
-      panels,
-    };
+    return { ...base, image: panels[0].image, link: work.link || '', panels };
   }
 
-  if (!work.file) return null;
-  const r = await commonsThumb(work.file, 1000);
-  if (!r) return null;
-  return {
-    title: work.title,
-    artist,
-    date: work.year || '',
-    image: r.image,
-    link: work.link || r.link,
-    source: 'Wikimedia Commons',
-  };
+  // A single pinned file, else a best-effort search.
+  const r = work.file
+    ? await commonsThumb(work.file, 1000)
+    : work.search
+      ? await commonsSearch(work.search, 1000)
+      : null;
+  return r ? { ...base, image: r.image, link: work.link || r.link } : null;
 }
 
 // ---------------------------------------------------------------------------
@@ -292,6 +316,16 @@ function resolveLocal(work: WorkRef, artist: string): Artwork | null {
   };
 }
 
+// Link-out — an in-copyright work we can't host. Show a card pointing to the
+// work (defaults to a Wikipedia search that resolves to the article), with no
+// embedded image. Swap to 'local' once a licensed image is added.
+function resolveLink(work: WorkRef, artist: string): Artwork {
+  const query = work.search || [work.title, artist].filter(Boolean).join(' ');
+  const link =
+    work.link || `https://en.wikipedia.org/wiki/Special:Search?go=Go&search=${encodeURIComponent(query)}`;
+  return { title: work.title, artist, date: work.year || '', image: '', link, source: '' };
+}
+
 // ---------------------------------------------------------------------------
 
 async function resolveWork(work: WorkRef, artist: string): Promise<Artwork | null> {
@@ -310,6 +344,8 @@ async function resolveWork(work: WorkRef, artist: string): Promise<Artwork | nul
         return resolveDirect(work, artist);
       case 'local':
         return resolveLocal(work, artist);
+      case 'link':
+        return resolveLink(work, artist);
     }
   } catch (err) {
     console.warn(`[artwork] could not resolve "${work.title}" (${artist}): ${err}`);

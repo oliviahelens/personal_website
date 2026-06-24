@@ -17,13 +17,19 @@ const { artworks } = Astro.props;
               <img src={p.image} alt={`${art.title}${p.title ? ` — ${p.title}` : ''}`} loading="lazy" />
             ))}
           </div>
-        ) : art.link ? (
-          <a class="art-link" href={art.link}>
+        ) : art.image ? (
+          art.link ? (
+            <a class="art-link" href={art.link}>
+              <img src={art.image} alt={`${art.title} — ${art.artist}`} loading="lazy" />
+            </a>
+          ) : (
             <img src={art.image} alt={`${art.title} — ${art.artist}`} loading="lazy" />
+          )
+        ) : art.link ? (
+          <a class="art-link placeholder" href={art.link}>
+            <span>In copyright &mdash; view&nbsp;&#8599;</span>
           </a>
-        ) : (
-          <img src={art.image} alt={`${art.title} — ${art.artist}`} loading="lazy" />
-        )}
+        ) : null}
         <figcaption>
           {art.link ? (
             <a class="art-title" href={art.link}>{art.title}</a>

@@ -220,6 +220,23 @@ ul.books {
   gap: 5px;
 }
 
+/* In-copyright works we can't host: a link-out card in place of the image. */
+.artwork .placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 4 / 3;
+  padding: 1rem;
+  text-align: center;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-decoration: none;
+  box-shadow: none;
+}
+.artwork .placeholder:hover { color: var(--fg); }
+
 .artwork figcaption {
   margin-top: 0.5rem;
   line-height: 1.3;
