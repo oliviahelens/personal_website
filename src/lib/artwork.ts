@@ -316,31 +316,37 @@ function resolveDirect(work: WorkRef, artist: string): Artwork | null {
   };
 }
 
+// Find a self-hosted image under /public by base name, trying common extensions
+// so the manifest needn't commit to a format. Returns the public URL or null.
+const LOCAL_EXTS = ['.jpg', '.jpeg', '.png', '.webp'];
+function findLocal(image: string): string | null {
+  const clean = image.replace(/^\/+/, '');
+  const candidates = /\.(jpe?g|png|webp)$/i.test(clean) ? [clean] : LOCAL_EXTS.map((e) => clean + e);
+  for (const rel of candidates) {
+    if (existsSync(resolvePath(process.cwd(), 'public', rel))) return '/' + rel;
+  }
+  return null;
+}
+
 function resolveLocal(work: WorkRef, artist: string): Artwork | null {
   if (!work.image) return null;
-  const file = resolvePath(process.cwd(), 'public', work.image.replace(/^\/+/, ''));
-  if (!existsSync(file)) {
+  const url = findLocal(work.image);
+  if (!url) {
     console.warn(`[artwork] local image not added yet, skipping: ${work.image} (${artist})`);
     return null;
   }
-  return {
-    title: work.title,
-    artist,
-    date: work.year || '',
-    image: work.image,
-    link: work.link || '',
-    source: '',
-  };
+  return { title: work.title, artist, date: work.year || '', image: url, link: work.link || '', source: '' };
 }
 
 // Link-out — an in-copyright work we can't host. Show a card pointing to the
-// work (defaults to a Wikipedia search that resolves to the article), with no
-// embedded image. Swap to 'local' once a licensed image is added.
+// work (defaults to a Wikipedia search that resolves to the article). If a
+// licensed image has since been self-hosted under /public, show that instead.
 function resolveLink(work: WorkRef, artist: string): Artwork {
   const query = work.search || [work.title, artist].filter(Boolean).join(' ');
   const link =
     work.link || `https://en.wikipedia.org/wiki/Special:Search?go=Go&search=${encodeURIComponent(query)}`;
-  return { title: work.title, artist, date: work.year || '', image: '', link, source: '' };
+  const url = work.image ? findLocal(work.image) : null;
+  return { title: work.title, artist, date: work.year || '', image: url || '', link, source: '' };
 }
 
 // ---------------------------------------------------------------------------

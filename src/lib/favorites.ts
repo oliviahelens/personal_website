@@ -23,17 +23,17 @@ export const ARTISTS: ArtistRef[] = [
     name: 'Maxfield Parrish',
     works: [
       { title: 'Daybreak', year: '1922', source: 'commons', file: 'Daybreak_by_Parrish_(1922).jpg' },
-      { title: 'Old White Birch', year: '~1937', source: 'commons', pending: true, note: 'not on Commons (private collection) — self-host to enable' },
-      { title: 'Stars', year: '1926', source: 'commons', pending: true, note: 'not on Commons (private collection) — self-host to enable' },
-      { title: 'Ecstasy', year: '1929', source: 'commons', pending: true, note: 'not on Commons (private collection) — self-host to enable' },
+      { title: 'Old White Birch', year: '~1937', source: 'local', image: '/artwork/parrish-old-white-birch', note: 'self-hosted (not on Commons)' },
+      { title: 'Stars', year: '1926', source: 'local', image: '/artwork/parrish-stars', note: 'self-hosted (not on Commons)' },
+      { title: 'Ecstasy', year: '1929', source: 'local', image: '/artwork/parrish-ecstasy', note: 'self-hosted (not on Commons)' },
     ],
   },
   {
     name: 'Zdzisław Beksiński',
     works: [
-      { title: 'Untitled — great tree over a red plain', source: 'link', search: 'Zdzisław Beksiński' },
-      { title: 'Untitled — colossal head over a ruined city', source: 'link', search: 'Zdzisław Beksiński' },
-      { title: 'Untitled — two shrouded figures in an ochre void', source: 'link', search: 'Zdzisław Beksiński' },
+      { title: 'Untitled — great tree over a red plain', source: 'link', search: 'Zdzisław Beksiński', image: '/artwork/beksinski-tree' },
+      { title: 'Untitled — colossal head over a ruined city', source: 'link', search: 'Zdzisław Beksiński', image: '/artwork/beksinski-head' },
+      { title: 'Untitled — two shrouded figures in an ochre void', source: 'link', search: 'Zdzisław Beksiński', image: '/artwork/beksinski-figures' },
     ],
   },
   {
@@ -57,7 +57,7 @@ export const ARTISTS: ArtistRef[] = [
       { title: 'Wanderer above the Sea of Fog', year: '1818', source: 'commons', file: 'Caspar_David_Friedrich_-_Wanderer_above_the_Sea_of_Fog.jpeg' },
       { title: 'Reefs by the Seashore', year: '1824', source: 'commons', file: 'Caspar_David_Friedrich_-_Felsenriff_am_Meeresstrand_(1824).jpg' },
       { title: 'Ruins of the Oybin', year: '~1835', source: 'commons', file: 'CD_Friedrich_Klosterruine_Oybin.jpg' },
-      { title: 'Coastal Landscape with Cross and Statue', source: 'commons', pending: true, note: 'not located on Commons under this title' },
+      { title: 'Coastal Landscape with Cross and Statue', source: 'local', image: '/artwork/friedrich-coastal-landscape-cross-statue', note: 'self-hosted (not on Commons)' },
     ],
   },
   {
@@ -116,23 +116,23 @@ export const ARTISTS: ArtistRef[] = [
   {
     name: 'M.C. Escher',
     works: [
-      { title: 'Waterfall', year: '1961', source: 'link' },
-      { title: 'Relativity', year: '1953', source: 'link' },
-      { title: 'Reptiles', year: '1943', source: 'link' },
+      { title: 'Waterfall', year: '1961', source: 'link', image: '/artwork/escher-waterfall' },
+      { title: 'Relativity', year: '1953', source: 'link', image: '/artwork/escher-relativity' },
+      { title: 'Reptiles', year: '1943', source: 'link', image: '/artwork/escher-reptiles' },
     ],
   },
   {
     name: 'Salvador Dalí',
     works: [
-      { title: 'The Persistence of Memory', year: '1931', source: 'link' },
-      { title: 'Swans Reflecting Elephants', year: '1937', source: 'link' },
+      { title: 'The Persistence of Memory', year: '1931', source: 'link', image: '/artwork/dali-persistence-of-memory' },
+      { title: 'Swans Reflecting Elephants', year: '1937', source: 'link', image: '/artwork/dali-swans-reflecting-elephants' },
     ],
   },
   {
     name: 'René Magritte',
     works: [
-      { title: 'The Lovers', year: '1928', source: 'link', search: 'The Lovers Magritte painting' },
-      { title: 'The Empire of Light', year: '1953–54', source: 'link' },
+      { title: 'The Lovers', year: '1928', source: 'link', search: 'The Lovers Magritte painting', image: '/artwork/magritte-the-lovers' },
+      { title: 'The Empire of Light', year: '1953–54', source: 'link', image: '/artwork/magritte-empire-of-light' },
     ],
   },
   {
@@ -207,14 +207,14 @@ export const ARTISTS: ArtistRef[] = [
     name: 'Vilhelm Hammershøi',
     works: [
       { title: 'Interior with Woman at Piano, Strandgade 30', year: '1901', source: 'commons', file: 'Vilhelm_Hammershøi,_Stue_med_kvinde_ved_klaver,_Strandgade_30,_1901.jpg' },
-      { title: 'Interior. With Piano and Woman in Black, Strandgade 30', year: '1901', source: 'commons', pending: true, note: 'Ordrupgaard version not confirmed on Commons' },
+      { title: 'Interior. With Piano and Woman in Black, Strandgade 30', year: '1901', source: 'local', image: '/artwork/hammershoi-piano-woman-in-black', note: 'self-hosted (Ordrupgaard)' },
     ],
   },
   {
     name: 'Louis Rémy Mignot',
     works: [
       { title: 'Solitude', year: '1855', source: 'commons', file: 'Louis_Rémy_Mignot_Solitude.jpg', note: 'only modest res (1107×613)' },
-      { title: 'Niagara', year: '1866', source: 'commons', pending: true, note: 'not on Commons; try Brooklyn Museum open-access' },
+      { title: 'Niagara', year: '1866', source: 'local', image: '/artwork/mignot-niagara', note: 'self-hosted (not on Commons)' },
     ],
   },
   {
@@ -227,19 +227,21 @@ export const ARTISTS: ArtistRef[] = [
     name: 'William-Adolphe Bouguereau',
     works: [
       { title: 'Dante and Virgil in Hell', year: '1850', source: 'commons', file: 'William_Bouguereau_-_Dante_and_Virgile_-_Google_Art_Project_2.jpg' },
-      { title: 'Première rêverie', year: '1889', source: 'commons', pending: true, note: 'not located on Commons under this title' },
+      { title: 'Première rêverie', year: '1889', source: 'local', image: '/artwork/bouguereau-premiere-reverie', note: 'self-hosted (not on Commons)' },
     ],
   },
 ];
 
-// Still HIDDEN (not on Commons — would need a self-hosted image):
-//   Parrish: Old White Birch, Stars, Ecstasy
-//   Friedrich: Coastal Landscape with Cross and Statue
-//   Hammershøi: Interior with Piano and Woman in Black (Ordrupgaard)
-//   Mignot: Niagara
-//   Bouguereau: Première rêverie
-//
-// Note: Klimt "Mother and Child" shows the full "The Three Ages of Woman"
-// (no isolated crop on Commons) — can CSS-crop or self-host a crop if wanted.
-//
-// Link-out (in copyright): Beksiński ×3, Escher ×3, Dalí ×2, Magritte ×2
+// SELF-HOSTED slots — drop a file with one of these base names (any of
+// .jpg/.jpeg/.png/.webp) into public/artwork/ and it appears automatically.
+// In-copyright works keep their link-out card until the file lands, then upgrade
+// to the image; the others are simply hidden until added.
+//   beksinski-tree, beksinski-head, beksinski-figures
+//   escher-waterfall, escher-relativity, escher-reptiles
+//   dali-persistence-of-memory, dali-swans-reflecting-elephants
+//   magritte-the-lovers, magritte-empire-of-light
+//   parrish-old-white-birch, parrish-stars, parrish-ecstasy
+//   friedrich-coastal-landscape-cross-statue
+//   hammershoi-piano-woman-in-black
+//   mignot-niagara
+//   bouguereau-premiere-reverie
