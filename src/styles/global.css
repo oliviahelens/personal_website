@@ -256,3 +256,25 @@ ul.books {
   color: var(--muted);
   font-size: 0.8rem;
 }
+
+/* Contemporary (in-copyright) artists — a linked-out list, not images. */
+.contemporary {
+  margin-top: 3.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--rule);
+}
+
+.contemporary-list {
+  line-height: 1.95;
+  color: var(--muted);
+}
+
+.contemporary-list a {
+  color: var(--fg);
+  text-decoration: none;
+}
+.contemporary-list a:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 0.5px;
+  text-underline-offset: 3px;
+}

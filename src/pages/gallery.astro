@@ -5,6 +5,36 @@ import { fetchGallery } from '../lib/artwork';
 import { ARTISTS } from '../lib/favorites';
 
 const artworks = await fetchGallery(ARTISTS);
+
+// Contemporary artists Olivia loves — linked out rather than hosted (their work
+// is under copyright, so we credit and point to it).
+const contemporary = [
+  { name: 'Ken Salaz', url: 'https://kensalaz.com' },
+  { name: 'Micah Ofstedahl', url: 'https://www.micahofstedahl.com' },
+  { name: 'Tomás Sánchez', url: 'https://www.tomassanchez.com' },
+  { name: 'WP Storck', url: 'https://www.williamstorck.com' },
+  { name: 'Devin Michael Roberts', url: 'https://devinrobertsstudio.com' },
+  { name: 'Renato Muccillo', url: 'https://renatomuccillo.com' },
+  { name: 'Ksenya Verse', url: 'https://www.ksenyaverse.com' },
+  { name: 'Sara Linda Poly', url: 'https://www.saralindapolystudio.com' },
+  { name: 'Jenny Kiehn', url: 'https://jennykiehn.com' },
+  { name: 'Sofia Sharbat', url: 'https://studiosharbat.com' },
+  { name: 'Dot Walker', url: 'https://www.dotwalker.co.uk' },
+  { name: 'Annie Stegg', url: 'https://www.anniestegg.com' },
+  { name: 'Ella Baudinet', url: 'https://www.ellabaudinet.com' },
+  { name: 'Luke Leal', url: 'https://www.lukelealart.com' },
+  { name: 'Michael Albrechtsen', url: 'https://michaelalbrechtsen.com' },
+  { name: 'Erik Koeppel', url: 'https://www.erikkoeppel.com' },
+  { name: 'Thomas Kegler', url: 'https://thomaskegler.com' },
+  { name: 'D. Eleinne Basa', url: 'https://www.eleinnebasa.com' },
+  { name: 'Chris Bacon', url: 'https://chrisbacon.com' },
+  { name: 'Justin T. Worrell', url: 'https://www.justintworrell.com' },
+  { name: 'Odd Nerdrum', url: 'https://nerdrum.com' },
+  { name: 'Mark Maggiori', url: 'https://markmaggiori.com' },
+  { name: 'Jef Bourgeau', url: 'https://detroitmona.wixsite.com/artgarage' },
+  { name: 'Erin Hanson', url: 'https://www.erinhanson.com' },
+  { name: 'Hallie Packard', url: 'https://www.halliepackardart.com' },
+];
 ---
 <Base
   title="Gallery — Olivia H. Scharfman"
@@ -21,4 +51,13 @@ const artworks = await fetchGallery(ARTISTS);
     <p>The gallery isn’t loading right now &mdash; it pulls from the museums’
     open-access APIs at build time, and one of them may be having a moment.</p>
   )}
+
+  <section class="contemporary">
+    <h2>Contemporary artists I love</h2>
+    <p class="contemporary-list">
+      {contemporary.map((a, i) => (
+        <>{i > 0 && ' · '}<a href={a.url}>{a.name}</a></>
+      ))}
+    </p>
+  </section>
 </Base>
