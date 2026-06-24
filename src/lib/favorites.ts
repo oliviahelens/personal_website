@@ -34,6 +34,9 @@ export const ARTISTS: ArtistRef[] = [
       { title: 'Untitled — great tree over a red plain', source: 'link', search: 'Zdzisław Beksiński', image: '/artwork/beksinski-tree' },
       { title: 'Untitled — colossal head over a ruined city', source: 'link', search: 'Zdzisław Beksiński', image: '/artwork/beksinski-head' },
       { title: 'Untitled — two shrouded figures in an ochre void', source: 'link', search: 'Zdzisław Beksiński', image: '/artwork/beksinski-figures' },
+      { title: 'Untitled — archway', source: 'link', search: 'Zdzisław Beksiński', image: '/artwork/beksinski-arch' },
+      { title: 'Untitled — crouching figure', source: 'link', search: 'Zdzisław Beksiński', image: '/artwork/beksinski-crouching-figure' },
+      { title: 'Untitled — rainbow', source: 'link', search: 'Zdzisław Beksiński', image: '/artwork/beksinski-rainbow' },
     ],
   },
   {
@@ -139,7 +142,7 @@ export const ARTISTS: ArtistRef[] = [
     name: 'Frederic Edwin Church',
     works: [
       { title: 'Cotopaxi', year: '1862', source: 'commons', file: 'Frederic_Edwin_Church_-_Cotopaxi_-_Google_Art_Project.jpg' },
-      { title: 'Niagara', year: '1857', source: 'commons', file: 'Frederic_Edwin_Church_-_The_Niagara_Falls_-_Google_Art_Project.jpg' },
+      { title: 'Niagara', year: '1857', source: 'commons', file: 'Frederic_Edwin_Church_-_Niagara_-_Google_Art_Project.jpg' },
     ],
   },
   {
@@ -207,7 +210,7 @@ export const ARTISTS: ArtistRef[] = [
     name: 'Vilhelm Hammershøi',
     works: [
       { title: 'Interior with Woman at Piano, Strandgade 30', year: '1901', source: 'commons', file: 'Vilhelm_Hammershøi,_Stue_med_kvinde_ved_klaver,_Strandgade_30,_1901.jpg' },
-      { title: 'Interior. With Piano and Woman in Black, Strandgade 30', year: '1901', source: 'local', image: '/artwork/hammershoi-piano-woman-in-black', note: 'self-hosted (Ordrupgaard)' },
+      { title: 'Interior with a Woman Seen from Behind', year: 'c. 1904', source: 'local', image: '/artwork/hammershoi-woman-from-behind', note: 'self-hosted' },
     ],
   },
   {
@@ -227,7 +230,7 @@ export const ARTISTS: ArtistRef[] = [
     name: 'William-Adolphe Bouguereau',
     works: [
       { title: 'Dante and Virgil in Hell', year: '1850', source: 'commons', file: 'William_Bouguereau_-_Dante_and_Virgile_-_Google_Art_Project_2.jpg' },
-      { title: 'Première rêverie', year: '1889', source: 'local', image: '/artwork/bouguereau-premiere-reverie', note: 'self-hosted (not on Commons)' },
+      { title: "Les Murmures de l'Amour", year: '1889', source: 'local', image: '/artwork/bouguereau-murmures-de-l-amour', note: 'self-hosted (not on Commons)' },
     ],
   },
 ];
@@ -236,12 +239,12 @@ export const ARTISTS: ArtistRef[] = [
 // .jpg/.jpeg/.png/.webp) into public/artwork/ and it appears automatically.
 // In-copyright works keep their link-out card until the file lands, then upgrade
 // to the image; the others are simply hidden until added.
-//   beksinski-tree, beksinski-head, beksinski-figures
+//   beksinski-tree, beksinski-head, beksinski-figures, beksinski-arch, beksinski-crouching-figure, beksinski-rainbow
 //   escher-waterfall, escher-relativity, escher-reptiles
 //   dali-persistence-of-memory, dali-swans-reflecting-elephants
 //   magritte-the-lovers, magritte-empire-of-light
 //   parrish-old-white-birch, parrish-stars, parrish-ecstasy
 //   friedrich-coastal-landscape-cross-statue
-//   hammershoi-piano-woman-in-black
+//   hammershoi-woman-from-behind
 //   mignot-niagara
-//   bouguereau-premiere-reverie
+//   bouguereau-murmures-de-l-amour
