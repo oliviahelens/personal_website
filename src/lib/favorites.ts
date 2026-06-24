@@ -230,7 +230,7 @@ export const ARTISTS: ArtistRef[] = [
     works: [
       { title: 'Dante and Virgil in Hell', year: '1850', source: 'commons', file: 'William_Bouguereau_-_Dante_and_Virgile_-_Google_Art_Project_2.jpg' },
       { title: "Les Murmures de l'Amour", year: '1889', source: 'local', image: '/artwork/bouguereau-murmures-de-l-amour', note: 'self-hosted (not on Commons)' },
-      { title: 'Le Fardeau Agréable', year: '1895', source: 'local', image: '/artwork/bouguereau-le-fardeau-agreable', note: 'self-hosted — or pin a Commons file' },
+      { title: 'Le Fardeau Agréable', year: '1895', source: 'commons', file: 'William-Adolphe_Bouguereau_(1825-1905)_-_Not_Too_Much_To_Carry_(1895).jpg' },
     ],
   },
 ];
@@ -245,7 +245,7 @@ export const ARTISTS: ArtistRef[] = [
 //   magritte-the-lovers
 //   parrish-old-white-birch, parrish-stars, parrish-ecstasy
 //   friedrich-coastal-landscape-cross-statue, friedrich-ruins
-//   church-niagara, church-cotopaxi (cotopaxi awaiting upload)
+//   church-niagara, church-cotopaxi
 //   hammershoi-woman-from-behind
 //   mignot-niagara
-//   bouguereau-murmures-de-l-amour, bouguereau-le-fardeau-agreable
+//   bouguereau-murmures-de-l-amour
