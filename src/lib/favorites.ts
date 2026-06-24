@@ -140,7 +140,7 @@ export const ARTISTS: ArtistRef[] = [
   {
     name: 'Frederic Edwin Church',
     works: [
-      { title: 'Cotopaxi', year: '1862', source: 'commons', file: 'Frederic_Edwin_Church_-_Cotopaxi_-_Google_Art_Project.jpg' },
+      { title: 'Cotopaxi', year: '1855', source: 'local', image: '/artwork/church-cotopaxi', note: 'self-hosted — the pink/orange version, replacing the 1862 Detroit one' },
       { title: 'Niagara', year: '1857', source: 'local', image: '/artwork/church-niagara', note: 'self-hosted — Commons scan was washed out' },
     ],
   },
@@ -244,7 +244,7 @@ export const ARTISTS: ArtistRef[] = [
 //   magritte-the-lovers
 //   parrish-old-white-birch, parrish-stars, parrish-ecstasy
 //   friedrich-coastal-landscape-cross-statue, friedrich-ruins
-//   church-niagara (awaiting upload)
+//   church-niagara, church-cotopaxi (cotopaxi awaiting upload)
 //   hammershoi-woman-from-behind
 //   mignot-niagara
 //   bouguereau-murmures-de-l-amour
