@@ -278,3 +278,11 @@ ul.books {
   text-decoration-thickness: 0.5px;
   text-underline-offset: 3px;
 }
+
+/* Watching — plain favorites lists of films and television. */
+.watch-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  line-height: 1.95;
+}

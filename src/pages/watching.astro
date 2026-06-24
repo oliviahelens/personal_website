@@ -1,0 +1,51 @@
+---
+import Base from '../layouts/Base.astro';
+
+const films = [
+  "Good Will Hunting",
+  "Dead Poets Society",
+  "12 Angry Men",
+  "Spirited Away",
+  "Howl's Moving Castle",
+  "The Boy and the Heron",
+  "The Big Short",
+  "Ferris Bueller's Day Off",
+  "Moneyball",
+  "Top Gun",
+];
+
+const television = [
+  "Avatar: The Last Airbender",
+  "Pantheon",
+  "The Queen's Gambit",
+  "Invincible",
+  "Mad Men",
+  "Death Note",
+  "Suits",
+  "Severance",
+  "Silicon Valley",
+  "Pluribus",
+];
+---
+<Base
+  title="Watching — Olivia H. Scharfman"
+  description="Films and television Olivia H. Scharfman loves."
+>
+  <h1>Watching</h1>
+
+  <p>Films and television I love.</p>
+
+  <section class="shelf">
+    <h2>Films</h2>
+    <ul class="watch-list">
+      {films.map((t) => <li>{t}</li>)}
+    </ul>
+  </section>
+
+  <section class="shelf">
+    <h2>Television</h2>
+    <ul class="watch-list">
+      {television.map((t) => <li>{t}</li>)}
+    </ul>
+  </section>
+</Base>
