@@ -279,10 +279,44 @@ ul.books {
   text-underline-offset: 3px;
 }
 
-/* Watching — plain favorites lists of films and television. */
-.watch-list {
+/* Watching — film & TV posters in a cover grid, like the bookshelves. */
+ul.watch-grid {
   list-style: none;
   padding: 0;
   margin: 0;
-  line-height: 1.95;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 1.6rem 1.25rem;
+}
+
+.watch { display: flex; flex-direction: column; }
+
+.watch .cover {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  border-radius: 2px;
+  background: var(--rule);
+  display: block;
+}
+
+.watch img.cover {
+  object-fit: cover;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+}
+
+.watch .cover-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem;
+  font-size: 0.7rem;
+  line-height: 1.3;
+  text-align: center;
+  color: var(--muted);
+}
+
+.watch-title {
+  margin-top: 0.5rem;
+  font-size: 0.82rem;
+  line-height: 1.25;
 }

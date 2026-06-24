@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import { fetchCovers } from '../lib/watching';
 
 const films = [
   "Good Will Hunting",
@@ -26,6 +27,8 @@ const television = [
   "Silicon Valley",
   "Pluribus",
 ];
+
+const covers = await fetchCovers(films, television);
 ---
 <Base
   title="Watching — Olivia H. Scharfman"
@@ -33,19 +36,35 @@ const television = [
 >
   <h1>Watching</h1>
 
-  <p>Films and television I love.</p>
-
   <section class="shelf">
     <h2>Films</h2>
-    <ul class="watch-list">
-      {films.map((t) => <li>{t}</li>)}
+    <ul class="watch-grid">
+      {covers.films.map((item) => (
+        <li class="watch">
+          {item.cover ? (
+            <img class="cover" src={item.cover} alt={item.title} loading="lazy" />
+          ) : (
+            <div class="cover cover-fallback">{item.title}</div>
+          )}
+          <span class="watch-title">{item.title}</span>
+        </li>
+      ))}
     </ul>
   </section>
 
   <section class="shelf">
     <h2>Television</h2>
-    <ul class="watch-list">
-      {television.map((t) => <li>{t}</li>)}
+    <ul class="watch-grid">
+      {covers.television.map((item) => (
+        <li class="watch">
+          {item.cover ? (
+            <img class="cover" src={item.cover} alt={item.title} loading="lazy" />
+          ) : (
+            <div class="cover cover-fallback">{item.title}</div>
+          )}
+          <span class="watch-title">{item.title}</span>
+        </li>
+      ))}
     </ul>
   </section>
 </Base>
