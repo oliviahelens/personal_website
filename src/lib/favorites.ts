@@ -59,7 +59,7 @@ export const ARTISTS: ArtistRef[] = [
     works: [
       { title: 'Wanderer above the Sea of Fog', year: '1818', source: 'commons', file: 'Caspar_David_Friedrich_-_Wanderer_above_the_Sea_of_Fog.jpeg' },
       { title: 'Reefs by the Seashore', year: '1824', source: 'commons', file: 'Caspar_David_Friedrich_-_Felsenriff_am_Meeresstrand_(1824).jpg' },
-      { title: 'Ruins of the Oybin', year: '~1835', source: 'commons', file: 'CD_Friedrich_Klosterruine_Oybin.jpg' },
+      { title: 'Ruins of the Oybin', year: '~1835', source: 'local', image: '/artwork/friedrich-ruins' },
       { title: 'Coastal Landscape with Cross and Statue', source: 'local', image: '/artwork/friedrich-coastal-landscape-cross-statue', note: 'self-hosted (not on Commons)' },
     ],
   },
@@ -141,7 +141,7 @@ export const ARTISTS: ArtistRef[] = [
     name: 'Frederic Edwin Church',
     works: [
       { title: 'Cotopaxi', year: '1862', source: 'commons', file: 'Frederic_Edwin_Church_-_Cotopaxi_-_Google_Art_Project.jpg' },
-      { title: 'Niagara', year: '1857', source: 'commons', file: 'Frederic_Edwin_Church_-_Niagara_-_Google_Art_Project.jpg' },
+      { title: 'Niagara', year: '1857', source: 'local', image: '/artwork/church-niagara', note: 'self-hosted — Commons scan was washed out' },
     ],
   },
   {
@@ -243,7 +243,8 @@ export const ARTISTS: ArtistRef[] = [
 //   dali-persistence-of-memory, dali-swans-reflecting-elephants
 //   magritte-the-lovers
 //   parrish-old-white-birch, parrish-stars, parrish-ecstasy
-//   friedrich-coastal-landscape-cross-statue
+//   friedrich-coastal-landscape-cross-statue, friedrich-ruins
+//   church-niagara (awaiting upload)
 //   hammershoi-woman-from-behind
 //   mignot-niagara
 //   bouguereau-murmures-de-l-amour
