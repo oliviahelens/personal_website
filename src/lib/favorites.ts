@@ -28,6 +28,14 @@ export const ARTISTS: ArtistRef[] = [
     ],
   },
   {
+    name: 'Arkhip Kuindzhi',
+    works: [
+      { title: 'Moonlit Night on the Dnieper', year: '1880', source: 'local', image: '/artwork/arkhip-dnieper' },
+      { title: 'Red Sunset on the Dnieper', year: 'c. 1905–08', source: 'local', image: '/artwork/arkhip-red' },
+      { title: 'After a Rain', year: '1879', source: 'local', image: '/artwork/arkhip-rain' },
+    ],
+  },
+  {
     name: 'Maxfield Parrish',
     works: [
       { title: 'Daybreak', year: '1922', source: 'commons', file: 'Daybreak_by_Parrish_(1922).jpg' },
@@ -246,6 +254,7 @@ export const ARTISTS: ArtistRef[] = [
 //   parrish-old-white-birch, parrish-stars, parrish-ecstasy
 //   friedrich-coastal-landscape-cross-statue, friedrich-ruins
 //   church-niagara, church-cotopaxi
+//   arkhip-dnieper, arkhip-red, arkhip-rain
 //   hammershoi-woman-from-behind
 //   mignot-niagara
 //   bouguereau-murmures-de-l-amour
