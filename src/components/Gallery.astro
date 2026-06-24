@@ -11,7 +11,13 @@ const { artworks } = Astro.props;
   <div class="gallery">
     {artworks.map((art) => (
       <figure class="artwork">
-        {art.link ? (
+        {art.panels?.length ? (
+          <div class="panels">
+            {art.panels.map((p) => (
+              <img src={p.image} alt={`${art.title}${p.title ? ` — ${p.title}` : ''}`} loading="lazy" />
+            ))}
+          </div>
+        ) : art.link ? (
           <a class="art-link" href={art.link}>
             <img src={art.image} alt={`${art.title} — ${art.artist}`} loading="lazy" />
           </a>

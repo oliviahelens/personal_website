@@ -2,9 +2,9 @@
 import Base from '../layouts/Base.astro';
 import Gallery from '../components/Gallery.astro';
 import { fetchGallery } from '../lib/artwork';
-import { HISTORICAL } from '../lib/favorites';
+import { ARTISTS } from '../lib/favorites';
 
-const artworks = await fetchGallery(HISTORICAL);
+const artworks = await fetchGallery(ARTISTS);
 ---
 <Base
   title="Gallery — Olivia H. Scharfman"
@@ -12,11 +12,11 @@ const artworks = await fetchGallery(HISTORICAL);
 >
   <h1>Gallery</h1>
 
-  <p>A few pieces I keep coming back to, pulled from the open-access
-  collections at <a href="https://www.metmuseum.org/">The Met</a> and the <a
-  href="https://www.artic.edu/">Art Institute of Chicago</a>, with a few more
-  from <a href="https://commons.wikimedia.org/">Wikimedia Commons</a>. Where the
-  work lives in a collection online, its title links back to it.</p>
+  <p>Works I keep coming back to &mdash; a few favorites from each of a handful
+  of artists. Most are public-domain scans from <a
+  href="https://commons.wikimedia.org/">Wikimedia Commons</a>, with a few from
+  <a href="https://www.metmuseum.org/">The Met</a>. Where a piece lives in a
+  collection online, its title links back to it.</p>
 
   <Gallery artworks={artworks} />
 

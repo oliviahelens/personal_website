@@ -213,6 +213,13 @@ ul.books {
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
 }
 
+/* Multi-panel sets (Mucha series, Cole cycles) shown as a small sub-grid. */
+.panels {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 5px;
+}
+
 .artwork figcaption {
   margin-top: 0.5rem;
   line-height: 1.3;
