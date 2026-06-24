@@ -1,19 +1,15 @@
 import type { ArtistRef } from './artwork';
 
 // Olivia's favorite artworks — 1–4 works per artist, 25 artists, in her order,
-// built from the curated handoff manifest.
+// built from the curated handoff manifest and pinned to exact Commons files.
 //
-// How each work resolves at build time (see artwork.ts):
-//   file:     a pinned Wikimedia Commons File: — exact and correct. ONLY these
-//             (plus 'met' and 'link') render today.
+// Source types (see artwork.ts):
+//   file:     a pinned Wikimedia Commons File:, resolved to a sized thumbnail.
+//   panels:   explicit Commons files shown as a sub-grid (Mucha, Cole sets).
 //   met:      a Met object by id.
-//   link:     an in-copyright work we can't host; renders a card linking to the
-//             work. To self-host a licensed image, switch to 'local' + image.
-//   search / category + `pending: true`: HIDDEN. Best-effort Commons search/
-//             category lookups proved unreliable (they grabbed the wrong image),
-//             so these are parked until pinned to an exact `file`. The search/
-//             category text is kept as a hint. To turn one on: replace it with
-//             `file: '<Commons File: title>'` and drop the `pending` flag.
+//   link:     an in-copyright work; renders a card linking to it (no image).
+//   search + `pending: true`: HIDDEN — not on Commons / not yet located. Drop a
+//             `file`/`image` in and remove `pending` to turn it on.
 
 export const ARTISTS: ArtistRef[] = [
   {
@@ -27,9 +23,9 @@ export const ARTISTS: ArtistRef[] = [
     name: 'Maxfield Parrish',
     works: [
       { title: 'Daybreak', year: '1922', source: 'commons', file: 'Daybreak_by_Parrish_(1922).jpg' },
-      { title: 'Old White Birch', year: '~1937', source: 'commons', search: 'Old White Birch Maxfield Parrish', pending: true },
-      { title: 'Stars', year: '1926', source: 'commons', search: 'Stars Maxfield Parrish', pending: true },
-      { title: 'Ecstasy', year: '1929', source: 'commons', search: 'Ecstasy Maxfield Parrish', pending: true },
+      { title: 'Old White Birch', year: '~1937', source: 'commons', pending: true, note: 'not on Commons (private collection) — self-host to enable' },
+      { title: 'Stars', year: '1926', source: 'commons', pending: true, note: 'not on Commons (private collection) — self-host to enable' },
+      { title: 'Ecstasy', year: '1929', source: 'commons', pending: true, note: 'not on Commons (private collection) — self-host to enable' },
     ],
   },
   {
@@ -43,7 +39,7 @@ export const ARTISTS: ArtistRef[] = [
   {
     name: 'Gustav Klimt',
     works: [
-      { title: 'Mother and Child', year: '1905', source: 'commons', search: 'Gustav Klimt Mother and Child Three Ages of Woman', pending: true, note: 'wants the mother-and-child detail (crop of The Three Ages of Woman)' },
+      { title: 'Mother and Child', year: '1905', source: 'commons', file: 'The_Three_Ages_of_Woman.jpg', note: 'full painting — Commons has no isolated mother-and-child crop' },
       { title: 'The Kiss', year: '1907–08', source: 'commons', file: 'The_Kiss_-_Gustav_Klimt_-_Google_Cultural_Institute.jpg' },
       { title: 'Death and Life', year: '1908–1915', source: 'commons', file: 'Gustav_Klimt_-_Death_and_Life_-_Google_Art_Project.jpg', note: 'Google Art Project file, not the ~419MB scan' },
     ],
@@ -60,8 +56,8 @@ export const ARTISTS: ArtistRef[] = [
     works: [
       { title: 'Wanderer above the Sea of Fog', year: '1818', source: 'commons', file: 'Caspar_David_Friedrich_-_Wanderer_above_the_Sea_of_Fog.jpeg' },
       { title: 'Reefs by the Seashore', year: '1824', source: 'commons', file: 'Caspar_David_Friedrich_-_Felsenriff_am_Meeresstrand_(1824).jpg' },
-      { title: 'Ruins of the Oybin', year: '1835', source: 'commons', search: 'Caspar David Friedrich Oybin', pending: true },
-      { title: 'Coastal Landscape with Cross and Statue', source: 'commons', search: 'Caspar David Friedrich coastal landscape cross statue', pending: true },
+      { title: 'Ruins of the Oybin', year: '~1835', source: 'commons', file: 'CD_Friedrich_Klosterruine_Oybin.jpg' },
+      { title: 'Coastal Landscape with Cross and Statue', source: 'commons', pending: true, note: 'not located on Commons under this title' },
     ],
   },
   {
@@ -75,21 +71,37 @@ export const ARTISTS: ArtistRef[] = [
     works: [
       { title: 'Among the Sierra Nevada, California', year: '1868', source: 'commons', file: 'Albert_Bierstadt_-_Among_the_Sierra_Nevada,_California_-_Google_Art_Project.jpg' },
       { title: 'A Storm in the Rocky Mountains, Mt. Rosalie', year: '1866', source: 'commons', file: 'Albert_Bierstadt_-_A_Storm_in_the_Rocky_Mountains,_Mt._Rosalie_-_Google_Art_Project.jpg' },
-      { title: 'The Storm in the Mountains', year: 'c. 1870', source: 'commons', search: 'The Storm in the Mountains Bierstadt', pending: true },
+      { title: 'The Storm in the Mountains', year: 'c. 1870', source: 'commons', file: 'Albert_Bierstadt_-_Storm_in_the_Mountains_-_47.1257_-_Museum_of_Fine_Arts.jpg' },
     ],
   },
   {
     name: 'Alphonse Mucha',
     works: [
-      { title: 'The Seasons', year: '1896', source: 'commons', category: 'Category:The seasons - Alfons Mucha (1896)', pending: true, note: '4 panels' },
-      { title: 'The Flowers', year: '1898', source: 'commons', category: 'Category:The flowers - Alfons Mucha (1898)', pending: true, note: '4 panels' },
+      {
+        title: 'The Seasons', year: '1896', source: 'commons',
+        panels: [
+          { file: 'Alfons_Mucha_-_The_Seasons_-_Spring_(1896).jpg', title: 'Spring' },
+          { file: 'Alfons_Mucha_-_The_Seasons_-_Summer_(1896).jpg', title: 'Summer' },
+          { file: 'Alfons_Mucha_-_The_Seasons_-_Autumn_(1896).jpg', title: 'Autumn' },
+          { file: 'Alfons_Mucha_-_The_Seasons_-_Winter_(1896).jpg', title: 'Winter' },
+        ],
+      },
+      {
+        title: 'The Flowers', year: '1898', source: 'commons',
+        panels: [
+          { file: 'Alfons_Mucha_-_La_Rose.jpg', title: 'Rose' },
+          { file: "Alfons_Mucha_-_L'iris.jpg", title: 'Iris' },
+          { file: "Alfons_Mucha_-_L'oeillet.jpg", title: 'Carnation' },
+          { file: 'Alfons_Mucha_-_Le_Lys.jpg', title: 'Lily' },
+        ],
+      },
     ],
   },
   {
     name: 'Ivan Aivazovsky',
     works: [
       { title: 'The Ninth Wave', year: '1850', source: 'commons', file: 'Aivazovsky,_Ivan_-_The_Ninth_Wave.jpg' },
-      { title: 'The Black Sea', year: '1881', source: 'commons', search: 'The Black Sea Aivazovsky 1881', pending: true },
+      { title: 'The Black Sea', year: '1881', source: 'commons', file: 'Иван_Константинович_Айвазовский_-_Черное_море_(на_Черном_море_начинает_разыгрываться_буря)_-_Google_Art_Project.jpg' },
       { title: 'Storm at Sea on a Moonlit Night', year: '1849', source: 'commons', file: 'Storm_at_Sea_on_a_Moonlit_Night_(Aivazovsky).jpg' },
     ],
   },
@@ -133,37 +145,54 @@ export const ARTISTS: ArtistRef[] = [
   {
     name: 'Thomas Cole',
     works: [
-      { title: 'The Course of Empire', year: '1833–36', source: 'commons', category: 'Category:The Course of Empire', pending: true, note: '5 panels' },
-      { title: 'The Voyage of Life', year: '1842', source: 'commons', category: 'Category:The Voyage of Life (Thomas Cole)', pending: true, note: '4 panels' },
+      {
+        title: 'The Course of Empire', year: '1833–36', source: 'commons',
+        panels: [
+          { file: 'Cole_Thomas_The_Course_of_Empire_The_Savage_State_1836.jpg', title: 'The Savage State' },
+          { file: 'Cole_Thomas_The_Course_of_Empire_The_Arcadian_or_Pastoral_State_1836.jpg', title: 'The Arcadian or Pastoral State' },
+          { file: 'Cole_Thomas_The_Consummation_The_Course_of_the_Empire_1836.jpg', title: 'The Consummation' },
+          { file: 'Cole_Thomas_The_Course_of_Empire_Destruction_1836.jpg', title: 'Destruction' },
+          { file: 'Cole_Thomas_The_Course_of_Empire_Desolation_1836.jpg', title: 'Desolation' },
+        ],
+      },
+      {
+        title: 'The Voyage of Life', year: '1842', source: 'commons',
+        panels: [
+          { file: 'Thomas_Cole_-_The_Voyage_of_Life_Childhood,_1842_(National_Gallery_of_Art).jpg', title: 'Childhood' },
+          { file: 'Thomas_Cole_-_The_Voyage_of_Life_Youth,_1842_(National_Gallery_of_Art).jpg', title: 'Youth' },
+          { file: 'Thomas_Cole_-_The_Voyage_of_Life_Manhood,_1842_(National_Gallery_of_Art).jpg', title: 'Manhood' },
+          { file: 'Thomas_Cole_-_The_Voyage_of_Life_Old_Age,_1842_(National_Gallery_of_Art).jpg', title: 'Old Age' },
+        ],
+      },
     ],
   },
   {
     name: 'Gian Lorenzo Bernini',
     works: [
-      { title: 'Apollo and Daphne', year: '1622–25', source: 'commons', search: 'Apollo and Daphne Bernini', pending: true },
-      { title: 'The Rape of Proserpina', year: '1621–22', source: 'commons', search: 'Rape of Proserpina Bernini', pending: true },
+      { title: 'Apollo and Daphne', year: '1622–25', source: 'commons', file: 'Apollo_and_Daphne_by_Bernini_(Galleria_Borghese).jpg' },
+      { title: 'The Rape of Proserpina', year: '1621–22', source: 'commons', file: 'The_Rape_of_Proserpina_by_Bernini,_Galleria_Borghese_(45779525174).jpg' },
     ],
   },
   {
     name: 'John Martin',
     works: [
-      { title: 'The Great Day of His Wrath', year: '1851–53', source: 'commons', search: 'The Great Day of His Wrath John Martin', pending: true },
-      { title: 'The Destruction of Pompeii and Herculaneum', year: '1822', source: 'commons', search: 'Destruction of Pompeii and Herculaneum John Martin', pending: true },
+      { title: 'The Great Day of His Wrath', year: '1851–53', source: 'commons', file: 'John_Martin_-_The_Great_Day_of_His_Wrath_-_Google_Art_Project.jpg' },
+      { title: 'The Destruction of Pompeii and Herculaneum', year: '1822', source: 'commons', file: 'Destruction_of_Pompeii_and_Herculaneum.jpg' },
     ],
   },
   {
     name: 'Caravaggio',
     works: [
       { title: 'Judith Beheading Holofernes', year: 'c. 1598–1602', source: 'commons', file: 'Judith_Beheading_Holofernes_-_Caravaggio.jpg' },
-      { title: 'The Incredulity of Saint Thomas', year: '1601–02', source: 'commons', search: 'Incredulity of Saint Thomas Caravaggio', pending: true },
-      { title: 'David with the Head of Goliath', year: '1609–10', source: 'commons', search: 'David with the Head of Goliath Caravaggio Borghese', pending: true },
+      { title: 'The Incredulity of Saint Thomas', year: '1601–02', source: 'commons', file: 'Caravaggio_incredulity.jpg', note: 'huge source (42558×31589); Commons thumb may be slow' },
+      { title: 'David with the Head of Goliath', year: '1609–10', source: 'commons', file: 'David_with_the_Head_of_Goliath-Caravaggio_(1610).jpg', note: 'Borghese version' },
     ],
   },
   {
     name: 'Claude Monet',
     works: [
-      { title: 'The Houses of Parliament, Sun Breaking Through the Fog', year: '1904', source: 'commons', search: 'Monet Houses of Parliament Sun Breaking Through the Fog Orsay', pending: true },
-      { title: 'Meules', year: '1890', source: 'commons', search: 'Meules Monet 1890', pending: true },
+      { title: 'The Houses of Parliament, Sun Breaking Through the Fog', year: '1904', source: 'commons', file: 'Londres,_le_Parlement._Trouée_de_soleil_dans_le_brouillard,_by_Claude_Monet_(35514322203).jpg' },
+      { title: 'Meules', year: '1890', source: 'commons', file: 'Claude_Monet_-_Meules_(W_1273).jpg' },
     ],
   },
   {
@@ -171,21 +200,21 @@ export const ARTISTS: ArtistRef[] = [
     works: [
       { title: 'In the Wild North', year: '1891', source: 'commons', file: 'Шишкин_И._И._(1891)_На_севере_диком.jpg' },
       { title: 'Rye', year: '1878', source: 'commons', file: 'Rozh.jpg' },
-      { title: 'Ship Grove (Mast-Tree Grove)', year: '1898', source: 'commons', search: 'Shishkin Mast Tree Grove', pending: true },
+      { title: 'Ship Grove (Mast-Tree Grove)', year: '1898', source: 'commons', file: 'Ivan_Shishkin_-_Mast-Tree_grove_-_Google_Art_Project.jpg' },
     ],
   },
   {
     name: 'Vilhelm Hammershøi',
     works: [
       { title: 'Interior with Woman at Piano, Strandgade 30', year: '1901', source: 'commons', file: 'Vilhelm_Hammershøi,_Stue_med_kvinde_ved_klaver,_Strandgade_30,_1901.jpg' },
-      { title: 'Interior. With Piano and Woman in Black, Strandgade 30', year: '1901', source: 'commons', search: 'Hammershøi Interior Piano Woman in Black Strandgade', pending: true },
+      { title: 'Interior. With Piano and Woman in Black, Strandgade 30', year: '1901', source: 'commons', pending: true, note: 'Ordrupgaard version not confirmed on Commons' },
     ],
   },
   {
     name: 'Louis Rémy Mignot',
     works: [
       { title: 'Solitude', year: '1855', source: 'commons', file: 'Louis_Rémy_Mignot_Solitude.jpg', note: 'only modest res (1107×613)' },
-      { title: 'Niagara', year: '1866', source: 'commons', search: 'Louis Rémy Mignot Niagara', pending: true },
+      { title: 'Niagara', year: '1866', source: 'commons', pending: true, note: 'not on Commons; try Brooklyn Museum open-access' },
     ],
   },
   {
@@ -198,27 +227,19 @@ export const ARTISTS: ArtistRef[] = [
     name: 'William-Adolphe Bouguereau',
     works: [
       { title: 'Dante and Virgil in Hell', year: '1850', source: 'commons', file: 'William_Bouguereau_-_Dante_and_Virgile_-_Google_Art_Project_2.jpg' },
-      { title: 'Première rêverie', year: '1889', source: 'commons', search: 'Bouguereau Première rêverie', pending: true },
+      { title: 'Première rêverie', year: '1889', source: 'commons', pending: true, note: 'not located on Commons under this title' },
     ],
   },
 ];
 
-// HIDDEN (pending an exact Commons File: link) — paste an "Original file" URL
-// for any of these and it renders correctly like Daybreak / The Kiss:
+// Still HIDDEN (not on Commons — would need a self-hosted image):
 //   Parrish: Old White Birch, Stars, Ecstasy
-//   Klimt: Mother and Child (cropped detail)
-//   Friedrich: Ruins of the Oybin, Coastal Landscape with Cross and Statue
-//   Bierstadt: The Storm in the Mountains
-//   Mucha: The Seasons, The Flowers (4 panel files each)
-//   Aivazovsky: The Black Sea
-//   Cole: The Course of Empire (5), The Voyage of Life (4) panel files
-//   Bernini: Apollo and Daphne, The Rape of Proserpina
-//   John Martin: The Great Day of His Wrath, The Destruction of Pompeii
-//   Caravaggio: The Incredulity of Saint Thomas, David with the Head of Goliath
-//   Monet: Sun Breaking Through the Fog, Meules
-//   Shishkin: Ship Grove
-//   Hammershøi: Interior with Piano and Woman in Black
+//   Friedrich: Coastal Landscape with Cross and Statue
+//   Hammershøi: Interior with Piano and Woman in Black (Ordrupgaard)
 //   Mignot: Niagara
 //   Bouguereau: Première rêverie
+//
+// Note: Klimt "Mother and Child" shows the full "The Three Ages of Woman"
+// (no isolated crop on Commons) — can CSS-crop or self-host a crop if wanted.
 //
 // Link-out (in copyright): Beksiński ×3, Escher ×3, Dalí ×2, Magritte ×2

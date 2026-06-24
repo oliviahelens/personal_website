@@ -144,9 +144,14 @@ async function resolveCommons(work: WorkRef, artist: string): Promise<Artwork | 
   if (work.category || work.panels?.length) {
     const panels = work.category
       ? await commonsCategoryPanels(work.category, 700)
-      : (await Promise.all((work.panels ?? []).map((p) => commonsThumb(p.file, 700)))).flatMap((r) =>
-          r ? [{ image: r.image, title: '' }] : [],
-        );
+      : (
+          await Promise.all(
+            (work.panels ?? []).map(async (p) => {
+              const r = await commonsThumb(p.file, 700);
+              return r ? { image: r.image, title: p.title || '' } : null;
+            }),
+          )
+        ).filter((x): x is { image: string; title: string } => x !== null);
     if (!panels.length) return null;
     return { ...base, image: panels[0].image, link: work.link || '', panels };
   }
