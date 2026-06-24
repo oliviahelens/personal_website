@@ -230,15 +230,6 @@ export const ARTISTS: ArtistRef[] = [
           { file: 'Alfons_Mucha_-_The_Seasons_-_Winter_(1896).jpg', title: 'Winter' },
         ],
       },
-      {
-        title: 'The Flowers', year: '1898', source: 'commons',
-        panels: [
-          { file: 'Alfons_Mucha_-_La_Rose.jpg', title: 'Rose' },
-          { file: "Alfons_Mucha_-_L'iris.jpg", title: 'Iris' },
-          { file: "Alfons_Mucha_-_L'oeillet.jpg", title: 'Carnation' },
-          { file: 'Alfons_Mucha_-_Le_Lys.jpg', title: 'Lily' },
-        ],
-      },
     ],
   },
 ];
