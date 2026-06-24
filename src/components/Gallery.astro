@@ -12,11 +12,21 @@ const { artworks } = Astro.props;
     {artworks.map((art) => (
       <figure class="artwork">
         {art.panels?.length ? (
-          <div class="panels">
-            {art.panels.map((p) => (
-              <img src={p.image} alt={`${art.title}${p.title ? ` — ${p.title}` : ''}`} loading="lazy" />
-            ))}
-          </div>
+          art.link ? (
+            <a class="art-link" href={art.link}>
+              <div class="panels">
+                {art.panels.map((p) => (
+                  <img src={p.image} alt={`${art.title}${p.title ? ` — ${p.title}` : ''}`} loading="lazy" />
+                ))}
+              </div>
+            </a>
+          ) : (
+            <div class="panels">
+              {art.panels.map((p) => (
+                <img src={p.image} alt={`${art.title}${p.title ? ` — ${p.title}` : ''}`} loading="lazy" />
+              ))}
+            </div>
+          )
         ) : art.image ? (
           art.link ? (
             <a class="art-link" href={art.link}>

@@ -1,8 +1,8 @@
 import type { ArtistRef } from './artwork';
 
 // Olivia's favorite artworks — 1–4 works per artist, 25 artists, ordered for
-// display flow (calmer/luminous works first; the decorative, sculptural, and
-// more intense/violent pieces sit lower and broken up so they don't cluster).
+// display flow (luminous landscapes lead; the decorative, sculptural, and more
+// intense/violent pieces sit lower and broken up so they don't cluster).
 //
 // Source types (see artwork.ts):
 //   file:     a pinned Wikimedia Commons File:, resolved to a sized thumbnail.
@@ -12,6 +12,21 @@ import type { ArtistRef } from './artwork';
 //   local:    a self-hosted image under /public/artwork.
 
 export const ARTISTS: ArtistRef[] = [
+  {
+    name: 'Ivan Aivazovsky',
+    works: [
+      { title: 'The Ninth Wave', year: '1850', source: 'commons', file: 'Aivazovsky,_Ivan_-_The_Ninth_Wave.jpg' },
+      { title: 'The Black Sea', year: '1881', source: 'commons', file: 'Иван_Константинович_Айвазовский_-_Черное_море_(на_Черном_море_начинает_разыгрываться_буря)_-_Google_Art_Project.jpg' },
+      { title: 'Storm at Sea on a Moonlit Night', year: '1849', source: 'commons', file: 'Storm_at_Sea_on_a_Moonlit_Night_(Aivazovsky).jpg' },
+    ],
+  },
+  {
+    name: 'Frederic Edwin Church',
+    works: [
+      { title: 'Cotopaxi', year: '1855', source: 'local', image: '/artwork/church-cotopaxi', note: 'self-hosted — the pink/orange version, replacing the 1862 Detroit one' },
+      { title: 'Niagara', year: '1857', source: 'local', image: '/artwork/church-niagara', note: 'self-hosted — Commons scan was washed out' },
+    ],
+  },
   {
     name: 'Maxfield Parrish',
     works: [
@@ -43,21 +58,6 @@ export const ARTISTS: ArtistRef[] = [
       { title: 'Among the Sierra Nevada, California', year: '1868', source: 'commons', file: 'Albert_Bierstadt_-_Among_the_Sierra_Nevada,_California_-_Google_Art_Project.jpg' },
       { title: 'A Storm in the Rocky Mountains, Mt. Rosalie', year: '1866', source: 'commons', file: 'Albert_Bierstadt_-_A_Storm_in_the_Rocky_Mountains,_Mt._Rosalie_-_Google_Art_Project.jpg' },
       { title: 'The Storm in the Mountains', year: 'c. 1870', source: 'commons', file: 'Albert_Bierstadt_-_Storm_in_the_Mountains_-_47.1257_-_Museum_of_Fine_Arts.jpg' },
-    ],
-  },
-  {
-    name: 'Ivan Aivazovsky',
-    works: [
-      { title: 'The Ninth Wave', year: '1850', source: 'commons', file: 'Aivazovsky,_Ivan_-_The_Ninth_Wave.jpg' },
-      { title: 'The Black Sea', year: '1881', source: 'commons', file: 'Иван_Константинович_Айвазовский_-_Черное_море_(на_Черном_море_начинает_разыгрываться_буря)_-_Google_Art_Project.jpg' },
-      { title: 'Storm at Sea on a Moonlit Night', year: '1849', source: 'commons', file: 'Storm_at_Sea_on_a_Moonlit_Night_(Aivazovsky).jpg' },
-    ],
-  },
-  {
-    name: 'Frederic Edwin Church',
-    works: [
-      { title: 'Cotopaxi', year: '1855', source: 'local', image: '/artwork/church-cotopaxi', note: 'self-hosted — the pink/orange version, replacing the 1862 Detroit one' },
-      { title: 'Niagara', year: '1857', source: 'local', image: '/artwork/church-niagara', note: 'self-hosted — Commons scan was washed out' },
     ],
   },
   {
@@ -112,33 +112,10 @@ export const ARTISTS: ArtistRef[] = [
     ],
   },
   {
-    name: 'Alphonse Mucha',
-    works: [
-      {
-        title: 'The Seasons', year: '1896', source: 'commons',
-        panels: [
-          { file: 'Alfons_Mucha_-_The_Seasons_-_Spring_(1896).jpg', title: 'Spring' },
-          { file: 'Alfons_Mucha_-_The_Seasons_-_Summer_(1896).jpg', title: 'Summer' },
-          { file: 'Alfons_Mucha_-_The_Seasons_-_Autumn_(1896).jpg', title: 'Autumn' },
-          { file: 'Alfons_Mucha_-_The_Seasons_-_Winter_(1896).jpg', title: 'Winter' },
-        ],
-      },
-      {
-        title: 'The Flowers', year: '1898', source: 'commons',
-        panels: [
-          { file: 'Alfons_Mucha_-_La_Rose.jpg', title: 'Rose' },
-          { file: "Alfons_Mucha_-_L'iris.jpg", title: 'Iris' },
-          { file: "Alfons_Mucha_-_L'oeillet.jpg", title: 'Carnation' },
-          { file: 'Alfons_Mucha_-_Le_Lys.jpg', title: 'Lily' },
-        ],
-      },
-    ],
-  },
-  {
     name: 'Thomas Cole',
     works: [
       {
-        title: 'The Course of Empire', year: '1833–36', source: 'commons',
+        title: 'The Course of Empire', year: '1833–36', source: 'commons', link: 'https://en.wikipedia.org/wiki/The_Course_of_Empire_(paintings)',
         panels: [
           { file: 'Cole_Thomas_The_Course_of_Empire_The_Savage_State_1836.jpg', title: 'The Savage State' },
           { file: 'Cole_Thomas_The_Course_of_Empire_The_Arcadian_or_Pastoral_State_1836.jpg', title: 'The Arcadian or Pastoral State' },
@@ -148,7 +125,7 @@ export const ARTISTS: ArtistRef[] = [
         ],
       },
       {
-        title: 'The Voyage of Life', year: '1842', source: 'commons',
+        title: 'The Voyage of Life', year: '1842', source: 'commons', link: 'https://en.wikipedia.org/wiki/The_Voyage_of_Life',
         panels: [
           { file: 'Thomas_Cole_-_The_Voyage_of_Life_Childhood,_1842_(National_Gallery_of_Art).jpg', title: 'Childhood' },
           { file: 'Thomas_Cole_-_The_Voyage_of_Life_Youth,_1842_(National_Gallery_of_Art).jpg', title: 'Youth' },
@@ -231,6 +208,29 @@ export const ARTISTS: ArtistRef[] = [
       { title: 'Untitled — archway', source: 'link', search: 'Zdzisław Beksiński', image: '/artwork/beksinski-arch' },
       { title: 'Untitled — crouching figure', source: 'link', search: 'Zdzisław Beksiński', image: '/artwork/beksinski-crouching-figure' },
       { title: 'Untitled — rainbow', source: 'link', search: 'Zdzisław Beksiński', image: '/artwork/beksinski-rainbow' },
+    ],
+  },
+  {
+    name: 'Alphonse Mucha',
+    works: [
+      {
+        title: 'The Seasons', year: '1896', source: 'commons',
+        panels: [
+          { file: 'Alfons_Mucha_-_The_Seasons_-_Spring_(1896).jpg', title: 'Spring' },
+          { file: 'Alfons_Mucha_-_The_Seasons_-_Summer_(1896).jpg', title: 'Summer' },
+          { file: 'Alfons_Mucha_-_The_Seasons_-_Autumn_(1896).jpg', title: 'Autumn' },
+          { file: 'Alfons_Mucha_-_The_Seasons_-_Winter_(1896).jpg', title: 'Winter' },
+        ],
+      },
+      {
+        title: 'The Flowers', year: '1898', source: 'commons',
+        panels: [
+          { file: 'Alfons_Mucha_-_La_Rose.jpg', title: 'Rose' },
+          { file: "Alfons_Mucha_-_L'iris.jpg", title: 'Iris' },
+          { file: "Alfons_Mucha_-_L'oeillet.jpg", title: 'Carnation' },
+          { file: 'Alfons_Mucha_-_Le_Lys.jpg', title: 'Lily' },
+        ],
+      },
     ],
   },
 ];
