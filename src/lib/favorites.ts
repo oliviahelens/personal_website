@@ -135,7 +135,6 @@ export const ARTISTS: ArtistRef[] = [
     name: 'René Magritte',
     works: [
       { title: 'The Lovers', year: '1928', source: 'link', search: 'The Lovers Magritte painting', image: '/artwork/magritte-the-lovers' },
-      { title: 'The Empire of Light', year: '1953–54', source: 'link', image: '/artwork/magritte-empire-of-light' },
     ],
   },
   {
@@ -242,7 +241,7 @@ export const ARTISTS: ArtistRef[] = [
 //   beksinski-tree, beksinski-head, beksinski-figures, beksinski-arch, beksinski-crouching-figure, beksinski-rainbow
 //   escher-waterfall, escher-relativity, escher-reptiles
 //   dali-persistence-of-memory, dali-swans-reflecting-elephants
-//   magritte-the-lovers, magritte-empire-of-light
+//   magritte-the-lovers
 //   parrish-old-white-birch, parrish-stars, parrish-ecstasy
 //   friedrich-coastal-landscape-cross-statue
 //   hammershoi-woman-from-behind
