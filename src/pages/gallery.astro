@@ -35,6 +35,32 @@ const contemporary = [
   { name: 'Erin Hanson', url: 'https://www.erinhanson.com' },
   { name: 'Hallie Packard', url: 'https://www.halliepackardart.com' },
 ];
+
+// A few of my own paintings — self-hosted in /public/artwork alongside the
+// gallery pieces (so the prebuild optimizer downsizes the photos), newest
+// first, shown at the very bottom of the page.
+const ownWork = [
+  {
+    src: '/artwork/scharfman-dream.jpg',
+    alt: 'Oil painting of a misty river winding toward a low moon, soft trees along the banks',
+    caption: '2026',
+  },
+  {
+    src: '/artwork/scharfman-dream3.jpeg',
+    alt: 'Oil painting of a grove of trees beside still water under a soft pink sunset',
+    caption: '2026',
+  },
+  {
+    src: '/artwork/scharfman-estonia.jpeg',
+    alt: 'Painting of a still blue bog lake dotted with small pine-covered islands',
+    caption: 'Estonia, 2022',
+  },
+  {
+    src: '/artwork/scharfman-half-moon-bay.jpeg',
+    alt: 'Painting of waves breaking on coastal rocks below a bluff, birds over the sea',
+    caption: 'Half Moon Bay, 2020',
+  },
+];
 ---
 <Base
   title="Gallery — Olivia H. Scharfman"
@@ -43,7 +69,8 @@ const contemporary = [
   <h1>Gallery</h1>
 
   <p>This is a gallery of artwork from some of my favorite visual artists of
-  all time.</p>
+  all time. Below is also a list of some of my favorite contemporary artists
+  and some of my own attempts.</p>
 
   <Gallery artworks={artworks} />
 
@@ -59,5 +86,17 @@ const contemporary = [
         <>{i > 0 && ' · '}<a href={a.url}>{a.name}</a></>
       ))}
     </p>
+  </section>
+
+  <section class="own-work">
+    <h2>Some of my own attempts</h2>
+    <div class="gallery">
+      {ownWork.map((p) => (
+        <figure class="artwork">
+          <img src={p.src} alt={p.alt} loading="lazy" />
+          <figcaption>{p.caption}</figcaption>
+        </figure>
+      ))}
+    </div>
   </section>
 </Base>

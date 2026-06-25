@@ -279,6 +279,19 @@ ul.books {
   text-underline-offset: 3px;
 }
 
+/* My own work — same masonry as the gallery above, set off with a divider. */
+.own-work {
+  margin-top: 3.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--rule);
+}
+.own-work .gallery { margin-top: 1.25rem; }
+.own-work figcaption {
+  margin-top: 0.45rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
 /* Watching — film & TV posters in a cover grid, like the bookshelves. */
 ul.watch-grid {
   list-style: none;
