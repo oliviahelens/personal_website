@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import Analytics from '../components/Analytics.astro';
 
 interface Props {
   title: string;
@@ -42,6 +43,7 @@ const links = [
     {description && <meta property="og:description" content={description} />}
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:site" content="@OliviaHelenS" />
+    <Analytics />
   </head>
   <body>
     <div class="layout">
