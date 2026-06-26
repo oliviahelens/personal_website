@@ -1,0 +1,43 @@
+---
+// Privacy-friendly visitor + link-click analytics via GoatCounter.
+//
+// SETUP: create a free account at https://www.goatcounter.com and pick a
+// site code (the subdomain). Set that code below (or via the
+// PUBLIC_GOATCOUNTER env var at build time). When the code is empty, no
+// tracking script is emitted — so local dev / previews stay clean.
+//
+// GoatCounter is cookie-less and doesn't collect personal data, so no
+// cookie-consent banner is needed.
+const code = import.meta.env.PUBLIC_GOATCOUNTER ?? 'oliviahelens';
+const endpoint = `https://${code}.goatcounter.com/count`;
+---
+{code && (
+  <>
+    {/* Pageview tracking */}
+    <script data-goatcounter={endpoint} async src="//gc.zgo.at/count.js"></script>
+
+    {/* Link-click tracking: records every <a> click as a GoatCounter event.
+        External links (Substack, X, LinkedIn, etc.) are the interesting ones,
+        since those leave the site and aren't captured as pageviews. */}
+    <script is:inline>
+      document.addEventListener('click', function (e) {
+        var a = e.target.closest && e.target.closest('a');
+        if (!a || !a.getAttribute('href')) return;
+        if (!window.goatcounter || !window.goatcounter.count) return;
+
+        var url;
+        try { url = new URL(a.href, location.href); } catch (_) { return; }
+        if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
+
+        var external = url.host !== location.host;
+        var label = (a.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 60);
+
+        window.goatcounter.count({
+          path: (external ? 'out: ' : 'link: ') + (label || url.pathname),
+          title: url.href,
+          event: true,
+        });
+      });
+    </script>
+  </>
+)}
