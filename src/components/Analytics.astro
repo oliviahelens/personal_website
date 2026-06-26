@@ -18,12 +18,17 @@ const endpoint = `https://${code}.goatcounter.com/count`;
 
     {/* Link-click tracking: records every <a> click as a GoatCounter event.
         External links (Substack, X, LinkedIn, etc.) are the interesting ones,
-        since those leave the site and aren't captured as pageviews. */}
+        since those leave the site and aren't captured as pageviews.
+
+        Clicking a link navigates the page away, which cancels GoatCounter's
+        normal image-based request before it's sent. We instead send the event
+        with fetch({keepalive:true}) (sendBeacon as a fallback), which is
+        designed to survive the page unloading, so outbound clicks aren't lost. */}
     <script is:inline>
       document.addEventListener('click', function (e) {
         var a = e.target.closest && e.target.closest('a');
         if (!a || !a.getAttribute('href')) return;
-        if (!window.goatcounter || !window.goatcounter.count) return;
+        if (!window.goatcounter || !window.goatcounter.url) return;
 
         var url;
         try { url = new URL(a.href, location.href); } catch (_) { return; }
@@ -32,11 +37,26 @@ const endpoint = `https://${code}.goatcounter.com/count`;
         var external = url.host !== location.host;
         var label = (a.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 60);
 
-        window.goatcounter.count({
+        // Build the request URL with GoatCounter's own helper so the format
+        // (event flag, cache-buster, etc.) matches what the server expects.
+        var beacon = window.goatcounter.url({
           path: (external ? 'out: ' : 'link: ') + (label || url.pathname),
           title: url.href,
           event: true,
         });
+        if (!beacon) return;
+
+        // keepalive lets the GET request outlive the navigation it triggered.
+        try {
+          fetch(beacon, { method: 'GET', mode: 'no-cors', keepalive: true });
+        } catch (_) {
+          if (navigator.sendBeacon) navigator.sendBeacon(beacon);
+          else window.goatcounter.count && window.goatcounter.count({
+            path: (external ? 'out: ' : 'link: ') + (label || url.pathname),
+            title: url.href,
+            event: true,
+          });
+        }
       });
     </script>
   </>
