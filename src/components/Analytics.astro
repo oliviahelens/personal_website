@@ -30,6 +30,11 @@ const endpoint = `https://${code}.goatcounter.com/count`;
         if (!a || !a.getAttribute('href')) return;
         if (!window.goatcounter || !window.goatcounter.url) return;
 
+        // Respect GoatCounter's own filters so clicks are skipped in the same
+        // cases as pageviews: the "skipgc" localStorage flag used to ignore
+        // your own visits, localhost, prerender, etc.
+        if (window.goatcounter.filter && window.goatcounter.filter()) return;
+
         var url;
         try { url = new URL(a.href, location.href); } catch (_) { return; }
         if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
