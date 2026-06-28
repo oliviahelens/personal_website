@@ -219,6 +219,13 @@ export const ARTISTS: ArtistRef[] = [
     ],
   },
   {
+    name: 'Guillermo Lorca García',
+    works: [
+      { title: 'Untitled — girl with swans', source: 'link', search: 'Guillermo Lorca García painting', image: '/artwork/lorca-swans' },
+      { title: 'Untitled — girl with tiger', source: 'link', search: 'Guillermo Lorca García painting', image: '/artwork/lorca-tiger' },
+    ],
+  },
+  {
     name: 'Alphonse Mucha',
     works: [
       {
@@ -255,6 +262,7 @@ export const ARTISTS: ArtistRef[] = [
 // In-copyright works keep their link-out card until the file lands, then upgrade
 // to the image; the others are simply hidden until added.
 //   beksinski-tree, beksinski-head, beksinski-figures, beksinski-arch, beksinski-crouching-figure, beksinski-rainbow
+//   lorca-swans, lorca-tiger
 //   escher-waterfall, escher-relativity, escher-reptiles
 //   dali-persistence-of-memory, dali-swans-reflecting-elephants
 //   magritte-the-lovers
