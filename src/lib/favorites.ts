@@ -244,7 +244,6 @@ export const ARTISTS: ArtistRef[] = [
           { file: 'Der_Alte_Matrose_b_22.jpg', title: '' },
           { file: 'Der_Alte_Matrose_b_20.jpg', title: '' },
           { file: 'Der_Alte_Matrose_b_29.jpg', title: '' },
-          { file: 'Der_Alte_Matrose_b_28.jpg', title: '' },
         ],
       },
     ],
