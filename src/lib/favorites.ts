@@ -232,6 +232,23 @@ export const ARTISTS: ArtistRef[] = [
       },
     ],
   },
+  {
+    name: 'Gustave Doré',
+    works: [
+      {
+        title: 'The Rime of the Ancient Mariner', year: '1876', source: 'commons',
+        link: 'https://commons.wikimedia.org/wiki/Category:The_Rime_of_the_Ancient_Mariner_by_Gustave_Dor%C3%A9',
+        note: "Doré's wood engravings for Coleridge's poem (Commons' German 'Der Alte Matrose' scan). Olivia's picks, in her order.",
+        panels: [
+          { file: 'Der_Alte_Matrose_b_09.jpg', title: '' },
+          { file: 'Der_Alte_Matrose_b_22.jpg', title: '' },
+          { file: 'Der_Alte_Matrose_b_20.jpg', title: '' },
+          { file: 'Der_Alte_Matrose_b_29.jpg', title: '' },
+          { file: 'Der_Alte_Matrose_b_28.jpg', title: '' },
+        ],
+      },
+    ],
+  },
 ];
 
 // SELF-HOSTED slots — drop a file with one of these base names (any of
