@@ -241,8 +241,7 @@ export const ARTISTS: ArtistRef[] = [
         note: "Doré's wood engravings for Coleridge's poem; pinned plates from Commons. More exist in the category — add files here to show them.",
         panels: [
           { file: 'Rime_of_the_Ancient_Mariner-Albatross-Dore.jpg', title: 'The Albatross' },
-          { file: 'Dore-I_Watched_the_Water-Snakes.jpg', title: 'I Watched the Water-Snakes' },
-          { file: 'Gustave_Dore_Ancient_Mariner_Illustration.jpg', title: '' },
+          { file: 'Gustave_Dore_Ancient_Mariner_Illustration.jpg', title: 'Alone on a Wide Wide Sea' },
         ],
       },
     ],
