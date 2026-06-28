@@ -238,10 +238,13 @@ export const ARTISTS: ArtistRef[] = [
       {
         title: 'The Rime of the Ancient Mariner', year: '1876', source: 'commons',
         link: 'https://commons.wikimedia.org/wiki/Category:The_Rime_of_the_Ancient_Mariner_by_Gustave_Dor%C3%A9',
-        note: "Doré's wood engravings for Coleridge's poem; pinned plates from Commons. More exist in the category — add files here to show them.",
+        note: "Doré's wood engravings for Coleridge's poem (Commons' German 'Der Alte Matrose' scan). Olivia's picks, in her order.",
         panels: [
-          { file: 'Rime_of_the_Ancient_Mariner-Albatross-Dore.jpg', title: 'The Albatross' },
-          { file: 'Gustave_Dore_Ancient_Mariner_Illustration.jpg', title: 'Alone on a Wide Wide Sea' },
+          { file: 'Der_Alte_Matrose_b_09.jpg', title: '' },
+          { file: 'Der_Alte_Matrose_b_22.jpg', title: '' },
+          { file: 'Der_Alte_Matrose_b_20.jpg', title: '' },
+          { file: 'Der_Alte_Matrose_b_29.jpg', title: '' },
+          { file: 'Der_Alte_Matrose_b_28.jpg', title: '' },
         ],
       },
     ],
