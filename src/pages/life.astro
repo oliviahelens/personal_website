@@ -1,0 +1,361 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base
+  title="Game of Life — Olivia H. Scharfman"
+  description="Conway's Game of Life — an interactive cellular automaton. Draw cells, drop in patterns, and watch complexity emerge from four simple rules."
+>
+  <h1>Game of Life</h1>
+
+  <p>Conway&rsquo;s Game of Life: every cell lives or dies each generation by
+  four simple rules, and out of that arithmetic comes drifting gliders,
+  blinking oscillators, and structures that build other structures. Click or
+  drag on the field to draw, or drop in a pattern below.</p>
+
+  <div class="life" aria-hidden="true">
+    <canvas id="life-canvas"></canvas>
+    <div class="life-controls">
+      <button type="button" data-action="toggle" class="primary">Pause</button>
+      <button type="button" data-action="step">Step</button>
+      <button type="button" data-action="random">Randomize</button>
+      <button type="button" data-action="clear">Clear</button>
+      <span class="life-sep" role="presentation"></span>
+      <button type="button" data-pattern="glider">Glider</button>
+      <button type="button" data-pattern="pulsar">Pulsar</button>
+      <button type="button" data-pattern="gun">Glider gun</button>
+      <span class="life-sep" role="presentation"></span>
+      <label class="life-speed">
+        Speed
+        <input type="range" id="life-speed" min="1" max="30" value="10" />
+      </label>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .life {
+    margin: 2rem 0 1.5rem;
+  }
+
+  #life-canvas {
+    display: block;
+    width: 100%;
+    height: clamp(340px, 58vh, 540px);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    background: var(--bg);
+    cursor: crosshair;
+    touch-action: none;
+  }
+
+  .life-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.9rem;
+    font-size: 0.85rem;
+  }
+
+  .life-controls button {
+    font-family: inherit;
+    font-size: 0.82rem;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 0.28rem 0.7rem;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .life-controls button:hover {
+    color: var(--fg);
+    border-color: var(--muted);
+  }
+  .life-controls button.primary {
+    color: var(--fg);
+    border-color: var(--muted);
+  }
+
+  .life-sep {
+    width: 1px;
+    align-self: stretch;
+    background: var(--rule);
+    margin: 0.1rem 0.35rem;
+  }
+
+  .life-speed {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--muted);
+  }
+  .life-speed input {
+    accent-color: var(--fg);
+    cursor: pointer;
+  }
+
+  @media (max-width: 48rem) {
+    .life-sep { display: none; }
+    .life-speed { width: 100%; margin-top: 0.25rem; }
+    .life-speed input { flex: 1; }
+  }
+</style>
+
+<script>
+  const canvas = document.getElementById('life-canvas') as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d')!;
+
+  const CELL = 13; // CSS px per cell
+  let cols = 0;
+  let rows = 0;
+  let cur: Uint8Array = new Uint8Array(0);
+  let next: Uint8Array = new Uint8Array(0);
+  let glow: Float32Array = new Float32Array(0); // fade-trail intensity per cell
+  let dpr = 1;
+
+  // Palette pulled from the site's CSS variables so light/dark just work.
+  let fg = '#1a1a1a';
+  let bg = '#fbfaf7';
+  function readColors() {
+    const s = getComputedStyle(document.documentElement);
+    fg = s.getPropertyValue('--fg').trim() || fg;
+    bg = s.getPropertyValue('--bg').trim() || bg;
+  }
+
+  const idx = (x: number, y: number) => y * cols + x;
+
+  function resize(preserve = true) {
+    const rect = canvas.getBoundingClientRect();
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const cssW = rect.width;
+    const cssH = rect.height;
+    const newCols = Math.max(1, Math.floor(cssW / CELL));
+    const newRows = Math.max(1, Math.floor(cssH / CELL));
+
+    canvas.width = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const nCur = new Uint8Array(newCols * newRows);
+    const nGlow = new Float32Array(newCols * newRows);
+    if (preserve && cols && rows) {
+      const cx = Math.min(cols, newCols);
+      const cy = Math.min(rows, newRows);
+      for (let y = 0; y < cy; y++) {
+        for (let x = 0; x < cx; x++) {
+          nCur[y * newCols + x] = cur[y * cols + x];
+          nGlow[y * newCols + x] = glow[y * cols + x];
+        }
+      }
+    }
+    cols = newCols;
+    rows = newRows;
+    cur = nCur;
+    next = new Uint8Array(cols * rows);
+    glow = nGlow;
+    draw();
+  }
+
+  function randomize() {
+    for (let i = 0; i < cur.length; i++) {
+      cur[i] = Math.random() < 0.28 ? 1 : 0;
+      glow[i] = cur[i];
+    }
+    draw();
+  }
+
+  function clear() {
+    cur.fill(0);
+    glow.fill(0);
+    draw();
+  }
+
+  function stepGrid() {
+    for (let y = 0; y < rows; y++) {
+      const yUp = (y - 1 + rows) % rows;
+      const yDn = (y + 1) % rows;
+      for (let x = 0; x < cols; x++) {
+        const xL = (x - 1 + cols) % cols;
+        const xR = (x + 1) % cols;
+        const n =
+          cur[idx(xL, yUp)] + cur[idx(x, yUp)] + cur[idx(xR, yUp)] +
+          cur[idx(xL, y)]                      + cur[idx(xR, y)] +
+          cur[idx(xL, yDn)] + cur[idx(x, yDn)] + cur[idx(xR, yDn)];
+        const alive = cur[idx(x, y)];
+        next[idx(x, y)] = (alive && (n === 2 || n === 3)) || (!alive && n === 3) ? 1 : 0;
+      }
+    }
+    const tmp = cur; cur = next; next = tmp;
+    for (let i = 0; i < cur.length; i++) {
+      glow[i] = cur[i] ? 1 : glow[i] * 0.82; // living cells solid, dead ones fade
+    }
+  }
+
+  function draw() {
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = fg;
+    const size = CELL - 1;
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
+        const g = glow[idx(x, y)];
+        if (g < 0.04) continue;
+        ctx.globalAlpha = cur[idx(x, y)] ? 0.92 : g * 0.45;
+        ctx.fillRect(x * CELL, y * CELL, size, size);
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // ---- animation loop -------------------------------------------------------
+  let running = true;
+  let gps = 10; // generations per second
+  let acc = 0;
+  let last = performance.now();
+
+  function frame(now: number) {
+    const dt = now - last;
+    last = now;
+    if (running) {
+      acc += dt;
+      const interval = 1000 / gps;
+      let steps = 0;
+      while (acc >= interval && steps < 4) {
+        stepGrid();
+        acc -= interval;
+        steps++;
+      }
+      draw();
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // ---- patterns -------------------------------------------------------------
+  const PATTERNS: Record<string, string> = {
+    glider: `
+.O.
+..O
+OOO`,
+    pulsar: `
+..OOO...OOO..
+.............
+O....O.O....O
+O....O.O....O
+O....O.O....O
+..OOO...OOO..
+.............
+..OOO...OOO..
+O....O.O....O
+O....O.O....O
+O....O.O....O
+.............
+..OOO...OOO..`,
+    gun: `
+........................O...........
+......................O.O...........
+............OO......OO............OO.
+...........O...O....OO............OO.
+OO........O.....O...OO..............
+OO........O...O.OO....O.O...........
+..........O.....O.......O...........
+...........O...O....................
+............OO......................`,
+  };
+
+  function stamp(name: string) {
+    const spec = PATTERNS[name];
+    if (!spec) return;
+    const lines = spec.split('\n').filter((l) => l.length > 0);
+    const h = lines.length;
+    const w = lines.reduce((m, l) => Math.max(m, l.length), 0);
+    clear();
+    const ox = Math.max(0, Math.floor((cols - w) / 2));
+    const oy = Math.max(0, Math.floor((rows - h) / 2));
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < lines[y].length; x++) {
+        const c = lines[y][x];
+        if (c === 'O' || c === '#' || c === '*') {
+          const gx = ox + x, gy = oy + y;
+          if (gx < cols && gy < rows) {
+            cur[idx(gx, gy)] = 1;
+            glow[idx(gx, gy)] = 1;
+          }
+        }
+      }
+    }
+    draw();
+  }
+
+  // ---- drawing with the mouse / touch --------------------------------------
+  let painting = false;
+  function cellFromEvent(e: PointerEvent) {
+    const rect = canvas.getBoundingClientRect();
+    const x = Math.floor((e.clientX - rect.left) / CELL);
+    const y = Math.floor((e.clientY - rect.top) / CELL);
+    return { x, y };
+  }
+  function paint(e: PointerEvent) {
+    const { x, y } = cellFromEvent(e);
+    if (x < 0 || y < 0 || x >= cols || y >= rows) return;
+    cur[idx(x, y)] = 1;
+    glow[idx(x, y)] = 1;
+    draw();
+  }
+  canvas.addEventListener('pointerdown', (e) => {
+    painting = true;
+    canvas.setPointerCapture(e.pointerId);
+    paint(e);
+  });
+  canvas.addEventListener('pointermove', (e) => { if (painting) paint(e); });
+  canvas.addEventListener('pointerup', () => { painting = false; });
+  canvas.addEventListener('pointercancel', () => { painting = false; });
+
+  // ---- controls -------------------------------------------------------------
+  const controls = document.querySelector('.life-controls')!;
+  const toggleBtn = controls.querySelector('[data-action="toggle"]') as HTMLButtonElement;
+
+  controls.addEventListener('click', (e) => {
+    const t = (e.target as HTMLElement).closest('button');
+    if (!t) return;
+    const action = t.dataset.action;
+    const pattern = t.dataset.pattern;
+    if (action === 'toggle') {
+      running = !running;
+      toggleBtn.textContent = running ? 'Pause' : 'Play';
+      toggleBtn.classList.toggle('primary', running);
+    } else if (action === 'step') {
+      running = false;
+      toggleBtn.textContent = 'Play';
+      toggleBtn.classList.remove('primary');
+      stepGrid();
+      draw();
+    } else if (action === 'random') {
+      randomize();
+    } else if (action === 'clear') {
+      clear();
+    } else if (pattern) {
+      stamp(pattern);
+    }
+  });
+
+  const speed = document.getElementById('life-speed') as HTMLInputElement;
+  speed.addEventListener('input', () => { gps = Number(speed.value); });
+
+  // ---- boot -----------------------------------------------------------------
+  readColors();
+  resize(false);
+  randomize();
+  gps = Number(speed.value);
+
+  let rt: number | undefined;
+  window.addEventListener('resize', () => {
+    clearTimeout(rt);
+    rt = window.setTimeout(() => resize(true), 150);
+  });
+
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  mq.addEventListener('change', () => { readColors(); draw(); });
+
+  requestAnimationFrame(frame);
+</script>
