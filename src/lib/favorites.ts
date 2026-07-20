@@ -211,7 +211,6 @@ export const ARTISTS: ArtistRef[] = [
     name: 'Zdzisław Beksiński',
     works: [
       { title: 'Untitled — great tree over a red plain', source: 'link', search: 'Zdzisław Beksiński', image: '/artwork/beksinski-tree' },
-      { title: 'Untitled — colossal head over a ruined city', source: 'link', search: 'Zdzisław Beksiński', image: '/artwork/beksinski-head' },
       { title: 'Untitled — two shrouded figures in an ochre void', source: 'link', search: 'Zdzisław Beksiński', image: '/artwork/beksinski-figures' },
       { title: 'Untitled — archway', source: 'link', search: 'Zdzisław Beksiński', image: '/artwork/beksinski-arch' },
       { title: 'Untitled — crouching figure', source: 'link', search: 'Zdzisław Beksiński', image: '/artwork/beksinski-crouching-figure' },
@@ -254,7 +253,7 @@ export const ARTISTS: ArtistRef[] = [
 // .jpg/.jpeg/.png/.webp) into public/artwork/ and it appears automatically.
 // In-copyright works keep their link-out card until the file lands, then upgrade
 // to the image; the others are simply hidden until added.
-//   beksinski-tree, beksinski-head, beksinski-figures, beksinski-arch, beksinski-crouching-figure, beksinski-rainbow
+//   beksinski-tree, beksinski-figures, beksinski-arch, beksinski-crouching-figure, beksinski-rainbow
 //   escher-waterfall, escher-relativity, escher-reptiles
 //   dali-persistence-of-memory, dali-swans-reflecting-elephants
 //   magritte-the-lovers
