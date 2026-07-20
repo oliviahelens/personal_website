@@ -7,18 +7,12 @@ import Base from '../layouts/Base.astro';
 >
   <h1>Conway&rsquo;s Game of Life</h1>
 
-  <p>Every cell lives or dies each generation by four simple rules:</p>
-
   <ol class="life-rules">
     <li>Any live cell with fewer than two live neighbours dies, as if by underpopulation.</li>
     <li>Any live cell with two or three live neighbours lives on to the next generation.</li>
     <li>Any live cell with more than three live neighbours dies, as if by overpopulation.</li>
     <li>Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.</li>
   </ol>
-
-  <p>Out of that arithmetic comes drifting gliders, blinking oscillators, and
-  structures that build other structures. Click or drag on the field to draw,
-  or drop in a pattern below.</p>
 
   <div class="life" aria-hidden="true">
     <canvas id="life-canvas"></canvas>
