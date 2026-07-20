@@ -1,0 +1,589 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base
+  title="Fractals — Olivia H. Scharfman"
+  description="A fractal playground — escape-time sets, the chaos game, and L-systems. Change a few simple rules and watch new fractals appear."
+>
+  <h1>Fractals</h1>
+
+  <p>Three ways to grow a fractal from a handful of rules. <em>Escape-time</em>
+  iterates a complex formula and asks how fast each point runs away;
+  the <em>chaos game</em> throws a point through random affine maps;
+  an <em>L-system</em> rewrites a string of symbols, then draws it with a
+  turtle. Switch between them, then bend the rules to make your own.</p>
+
+  <div class="frac">
+    <div class="frac-modes" role="tablist" aria-label="Fractal generator">
+      <button type="button" role="tab" data-mode="escape" class="active" aria-selected="true">Escape-time</button>
+      <button type="button" role="tab" data-mode="chaos" aria-selected="false">Chaos game</button>
+      <button type="button" role="tab" data-mode="lsystem" aria-selected="false">L-system</button>
+    </div>
+
+    <canvas id="frac-canvas"></canvas>
+
+    <div class="frac-panel" data-panel="escape">
+      <button type="button" data-esc="julia">Julia: off</button>
+      <label class="frac-range">Power <input type="range" id="esc-power" min="2" max="6" step="1" value="2" /></label>
+      <label class="frac-range">Detail <input type="range" id="esc-iter" min="40" max="400" step="10" value="130" /></label>
+      <button type="button" data-esc="reset">Reset view</button>
+      <span class="frac-hint" id="esc-hint">Click to zoom in · shift-click to zoom out</span>
+    </div>
+
+    <div class="frac-panel" data-panel="chaos" hidden>
+      <button type="button" data-chaos="fern">Barnsley fern</button>
+      <button type="button" data-chaos="sierpinski">Sierpiński</button>
+      <button type="button" data-chaos="dragon">Dragon</button>
+      <button type="button" data-chaos="levy">Lévy C</button>
+      <span class="life-sep" role="presentation"></span>
+      <button type="button" data-chaos="perturb">New variant</button>
+    </div>
+
+    <div class="frac-panel" data-panel="lsystem" hidden>
+      <div class="frac-row">
+        <button type="button" data-ls="koch">Koch</button>
+        <button type="button" data-ls="snowflake">Snowflake</button>
+        <button type="button" data-ls="sierpinski">Sierpiński</button>
+        <button type="button" data-ls="dragon">Dragon</button>
+        <button type="button" data-ls="plant">Plant</button>
+        <button type="button" data-ls="levy">Lévy C</button>
+      </div>
+      <label class="frac-text">Axiom <input type="text" id="ls-axiom" spellcheck="false" /></label>
+      <label class="frac-text">Rules <input type="text" id="ls-rules" spellcheck="false" /></label>
+      <div class="frac-row">
+        <label class="frac-range">Angle <input type="range" id="ls-angle" min="5" max="120" step="1" value="90" /><span id="ls-angle-v" class="frac-val"></span></label>
+        <label class="frac-range">Depth <input type="range" id="ls-depth" min="0" max="12" step="1" value="4" /><span id="ls-depth-v" class="frac-val"></span></label>
+      </div>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .frac { margin: 2rem 0 1.5rem; }
+
+  #frac-canvas {
+    display: block;
+    width: 100%;
+    height: clamp(360px, 60vh, 560px);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    background: var(--bg);
+    touch-action: none;
+  }
+
+  .frac-modes {
+    display: flex;
+    gap: 0;
+    margin-bottom: 0.9rem;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    width: fit-content;
+    max-width: 100%;
+    overflow: hidden;
+  }
+  .frac-modes button {
+    font-family: inherit;
+    font-size: 0.85rem;
+    color: var(--muted);
+    background: transparent;
+    border: none;
+    border-right: 1px solid var(--rule);
+    padding: 0.35rem 0.9rem;
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+  }
+  .frac-modes button:last-child { border-right: none; }
+  .frac-modes button:hover { color: var(--fg); }
+  .frac-modes button.active { color: var(--fg); background: var(--rule); }
+
+  .frac-panel {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.9rem;
+    font-size: 0.85rem;
+  }
+  .frac-panel[hidden] { display: none; }
+
+  .frac-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .frac-panel button {
+    font-family: inherit;
+    font-size: 0.82rem;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 0.28rem 0.7rem;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .frac-panel button:hover { color: var(--fg); border-color: var(--muted); }
+
+  .frac-range, .frac-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--muted);
+  }
+  .frac-range input[type="range"] { accent-color: var(--fg); cursor: pointer; }
+  .frac-val { min-width: 2ch; color: var(--fg); }
+
+  .frac-text { flex: 1 1 100%; }
+  .frac-text input[type="text"] {
+    flex: 1;
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 0.8rem;
+    color: var(--fg);
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 0.3rem 0.5rem;
+  }
+  .frac-text input:focus { outline: none; border-color: var(--muted); }
+
+  .frac-hint { color: var(--muted); font-size: 0.8rem; }
+
+  .life-sep {
+    width: 1px;
+    align-self: stretch;
+    background: var(--rule);
+    margin: 0.1rem 0.35rem;
+  }
+
+  @media (max-width: 48rem) {
+    .life-sep { display: none; }
+  }
+</style>
+
+<script>
+  const canvas = document.getElementById('frac-canvas');
+  const ctx = canvas.getContext('2d');
+
+  // ---- palette from the site's CSS variables (light/dark aware) -------------
+  let fg = '#1a1a1a', bg = '#fbfaf7';
+  let fgRgb = [26, 26, 26], bgRgb = [251, 250, 247];
+  function hexToRgb(h) {
+    h = h.replace('#', '').trim();
+    if (h.length === 3) h = h.split('').map((c) => c + c).join('');
+    return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+  }
+  function readColors() {
+    const s = getComputedStyle(document.documentElement);
+    fg = (s.getPropertyValue('--fg').trim()) || fg;
+    bg = (s.getPropertyValue('--bg').trim()) || bg;
+    fgRgb = hexToRgb(fg);
+    bgRgb = hexToRgb(bg);
+  }
+
+  // ---- canvas sizing --------------------------------------------------------
+  let Wb = 0, Hb = 0, dpr = 1;
+  function sizeCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    Wb = Math.max(1, Math.round(rect.width * dpr));
+    Hb = Math.max(1, Math.round(rect.height * dpr));
+    canvas.width = Wb;
+    canvas.height = Hb;
+  }
+
+  let mode = 'escape';
+
+  // ===========================================================================
+  // ESCAPE-TIME  (Mandelbrot / Julia,  z -> z^p + c)
+  // ===========================================================================
+  const esc = { cx: -0.6, cy: 0, w: 3.2, power: 2, iter: 130, julia: false, cRe: -0.4, cIm: 0.6, frozen: false };
+  let ebuf, ectx;
+
+  function escRender(quality) {
+    const ew = Math.min(Wb, quality === 'low' ? 220 : 560);
+    const eh = Math.max(1, Math.round(ew * Hb / Wb));
+    if (!ebuf) { ebuf = document.createElement('canvas'); ectx = ebuf.getContext('2d'); }
+    ebuf.width = ew; ebuf.height = eh;
+    const img = ectx.createImageData(ew, eh);
+    const data = img.data;
+    const maxIter = esc.iter;
+    const p = esc.power;
+    const logP = Math.log(p);
+    const pxScale = esc.w / ew;
+    const vh = pxScale * eh;
+    const halfW = esc.w / 2, halfH = vh / 2;
+    const [br, bgc, bb] = bgRgb;
+    const [fr, fgc, fb] = fgRgb;
+
+    for (let py = 0; py < eh; py++) {
+      const y0 = esc.cy + (py / eh) * vh - halfH;
+      for (let px = 0; px < ew; px++) {
+        const x0 = esc.cx + (px / ew) * esc.w - halfW;
+        let zx, zy, cr, ci;
+        if (esc.julia) { zx = x0; zy = y0; cr = esc.cRe; ci = esc.cIm; }
+        else { zx = 0; zy = 0; cr = x0; ci = y0; }
+
+        let i = 0, r2 = 0;
+        for (; i < maxIter; i++) {
+          r2 = zx * zx + zy * zy;
+          if (r2 > 1e6) break;
+          if (p === 2) {
+            const nx = zx * zx - zy * zy + cr;
+            zy = 2 * zx * zy + ci; zx = nx;
+          } else {
+            const r = Math.pow(r2, p / 2);
+            const a = Math.atan2(zy, zx) * p;
+            zx = r * Math.cos(a) + cr;
+            zy = r * Math.sin(a) + ci;
+          }
+        }
+
+        let t;
+        if (i >= maxIter) t = 1; // inside the set
+        else {
+          const mu = i + 1 - Math.log(Math.log(Math.sqrt(r2))) / logP;
+          t = Math.max(0, Math.min(1, mu / maxIter));
+          t = Math.sqrt(t); // lift the midtones
+        }
+        const o = (py * ew + px) * 4;
+        data[o]     = br + (fr - br) * t;
+        data[o + 1] = bgc + (fgc - bgc) * t;
+        data[o + 2] = bb + (fb - bb) * t;
+        data[o + 3] = 255;
+      }
+    }
+    ectx.putImageData(img, 0, 0);
+    ctx.imageSmoothingEnabled = true;
+    ctx.clearRect(0, 0, Wb, Hb);
+    ctx.drawImage(ebuf, 0, 0, Wb, Hb);
+  }
+
+  let escPending = null;
+  function escSchedule(quality) {
+    escPending = quality;
+    requestAnimationFrame(() => {
+      if (escPending == null) return;
+      const q = escPending; escPending = null;
+      escRender(q);
+    });
+  }
+
+  function escPointToComplex(e) {
+    const rect = canvas.getBoundingClientRect();
+    const fx = (e.clientX - rect.left) / rect.width;
+    const fy = (e.clientY - rect.top) / rect.height;
+    const vh = esc.w * (Hb / Wb);
+    return { re: esc.cx + (fx - 0.5) * esc.w, im: esc.cy + (fy - 0.5) * vh, fx, fy };
+  }
+
+  // ===========================================================================
+  // CHAOS GAME  (iterated affine maps, plotted point by point)
+  // ===========================================================================
+  const CHAOS_PRESETS = {
+    fern: [
+      [0, 0, 0, 0.16, 0, 0, 0.01],
+      [0.85, 0.04, -0.04, 0.85, 0, 1.6, 0.85],
+      [0.2, -0.26, 0.23, 0.22, 0, 1.6, 0.07],
+      [-0.15, 0.28, 0.26, 0.24, 0, 0.44, 0.07],
+    ],
+    sierpinski: [
+      [0.5, 0, 0, 0.5, 0, 0, 0.3334],
+      [0.5, 0, 0, 0.5, 0.5, 0, 0.3333],
+      [0.5, 0, 0, 0.5, 0.25, 0.4330, 0.3333],
+    ],
+    dragon: [
+      [0.5, -0.5, 0.5, 0.5, 0, 0, 0.5],
+      [-0.5, -0.5, 0.5, -0.5, 1, 0, 0.5],
+    ],
+    levy: [
+      [0.5, -0.5, 0.5, 0.5, 0, 0, 0.5],
+      [0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5],
+    ],
+  };
+  const chaos = { maps: null, base: null, cum: null, x: 0, y: 0, count: 0, tf: null, raf: 0 };
+  const CHAOS_CAP = 340000;
+
+  function chaosSetup(maps) {
+    chaos.maps = maps;
+    // cumulative probability table
+    let acc = 0; chaos.cum = maps.map((m) => (acc += m[6]));
+    chaos.cum[chaos.cum.length - 1] = 1.0001;
+    // find bounds by sampling the attractor
+    let x = 0, y = 0, minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
+    for (let i = 0; i < 6000; i++) {
+      const m = pickMap();
+      const nx = m[0] * x + m[1] * y + m[4];
+      y = m[2] * x + m[3] * y + m[5]; x = nx;
+      if (i > 20) {
+        if (x < minX) minX = x; if (x > maxX) maxX = x;
+        if (y < minY) minY = y; if (y > maxY) maxY = y;
+      }
+    }
+    const pad = 0.06;
+    const sx = (Wb * (1 - 2 * pad)) / Math.max(1e-6, maxX - minX);
+    const sy = (Hb * (1 - 2 * pad)) / Math.max(1e-6, maxY - minY);
+    const s = Math.min(sx, sy);
+    const ox = (Wb - s * (maxX - minX)) / 2 - s * minX;
+    const oy = (Hb - s * (maxY - minY)) / 2 - s * minY;
+    chaos.tf = { s, ox, oy };
+    chaos.x = 0; chaos.y = 0; chaos.count = 0;
+    ctx.clearRect(0, 0, Wb, Hb);
+  }
+
+  function pickMap() {
+    const r = Math.random();
+    const cum = chaos.cum;
+    for (let i = 0; i < cum.length; i++) if (r <= cum[i]) return chaos.maps[i];
+    return chaos.maps[chaos.maps.length - 1];
+  }
+
+  function chaosLoad(name) {
+    chaos.base = CHAOS_PRESETS[name].map((m) => m.slice());
+    chaosSetup(chaos.base.map((m) => m.slice()));
+    chaosStart();
+  }
+
+  function chaosPerturb() {
+    if (!chaos.base) return;
+    const j = () => (Math.random() - 0.5) * 0.09;
+    const maps = chaos.base.map((m) => [m[0] + j(), m[1] + j(), m[2] + j(), m[3] + j(), m[4] + j(), m[5] + j(), m[6]]);
+    chaosSetup(maps);
+    chaosStart();
+  }
+
+  function chaosStart() {
+    cancelAnimationFrame(chaos.raf);
+    const dot = Math.max(1, Math.round(dpr));
+    const step = () => {
+      if (mode !== 'chaos') return;
+      ctx.fillStyle = fg;
+      ctx.globalAlpha = 0.34;
+      const { s, ox, oy } = chaos.tf;
+      let x = chaos.x, y = chaos.y;
+      for (let i = 0; i < 3500; i++) {
+        const m = pickMap();
+        const nx = m[0] * x + m[1] * y + m[4];
+        y = m[2] * x + m[3] * y + m[5]; x = nx;
+        ctx.fillRect(ox + s * x, Hb - (oy + s * y), dot, dot); // flip y (canvas y grows down)
+      }
+      chaos.x = x; chaos.y = y; chaos.count += 3500;
+      ctx.globalAlpha = 1;
+      if (chaos.count < CHAOS_CAP) chaos.raf = requestAnimationFrame(step);
+    };
+    chaos.raf = requestAnimationFrame(step);
+  }
+
+  // ===========================================================================
+  // L-SYSTEM  (string rewriting + turtle graphics)
+  // ===========================================================================
+  const LS_PRESETS = {
+    koch:       { axiom: 'F', rules: 'F=F+F-F-F+F', angle: 90, depth: 4, heading: 0 },
+    snowflake:  { axiom: 'F--F--F', rules: 'F=F+F--F+F', angle: 60, depth: 4, heading: 0 },
+    sierpinski: { axiom: 'F', rules: 'F=G-F-G;G=F+G+F', angle: 60, depth: 6, heading: 0 },
+    dragon:     { axiom: 'FX', rules: 'X=X+YF+;Y=-FX-Y', angle: 90, depth: 11, heading: 0 },
+    plant:      { axiom: 'X', rules: 'X=F+[[X]-X]-F[-FX]+X;F=FF', angle: 25, depth: 5, heading: 90 },
+    levy:       { axiom: 'F', rules: 'F=+F--F+', angle: 45, depth: 12, heading: 0 },
+  };
+  const LS_MAXLEN = 500000;
+  const ls = { heading: 0 };
+  const $axiom = document.getElementById('ls-axiom');
+  const $rules = document.getElementById('ls-rules');
+  const $angle = document.getElementById('ls-angle');
+  const $depth = document.getElementById('ls-depth');
+  const $angleV = document.getElementById('ls-angle-v');
+  const $depthV = document.getElementById('ls-depth-v');
+
+  function parseRules(text) {
+    const map = {};
+    text.split(/[;\n]/).forEach((part) => {
+      const eq = part.indexOf('=');
+      if (eq > 0) map[part.slice(0, eq).trim()] = part.slice(eq + 1).trim();
+    });
+    return map;
+  }
+
+  function expand(axiom, rules, depth) {
+    let s = axiom;
+    for (let d = 0; d < depth; d++) {
+      let out = '';
+      for (let i = 0; i < s.length; i++) {
+        out += (rules[s[i]] !== undefined) ? rules[s[i]] : s[i];
+        if (out.length > LS_MAXLEN) return out; // guard against blow-up
+      }
+      s = out;
+      if (s.length > LS_MAXLEN) break;
+    }
+    return s;
+  }
+
+  // Walk the string with a turtle, calling cb(x0,y0,x1,y1) for each drawn segment.
+  function walk(str, angleRad, cb) {
+    let x = 0, y = 0, a = ls.heading * Math.PI / 180;
+    const stack = [];
+    for (let i = 0; i < str.length; i++) {
+      const c = str[i];
+      if (c === 'F' || c === 'G') {
+        const nx = x + Math.cos(a), ny = y + Math.sin(a);
+        cb(x, y, nx, ny); x = nx; y = ny;
+      } else if (c === 'f') { x += Math.cos(a); y += Math.sin(a); }
+      else if (c === '+') a += angleRad;
+      else if (c === '-') a -= angleRad;
+      else if (c === '[') stack.push([x, y, a]);
+      else if (c === ']') { const s = stack.pop(); if (s) { x = s[0]; y = s[1]; a = s[2]; } }
+    }
+  }
+
+  function lsRender() {
+    const axiom = $axiom.value.trim() || 'F';
+    const rules = parseRules($rules.value);
+    const depth = Number($depth.value);
+    const angleRad = Number($angle.value) * Math.PI / 180;
+    $angleV.textContent = $angle.value + '°';
+    $depthV.textContent = String(depth);
+
+    const str = expand(axiom, rules, depth);
+    let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
+    walk(str, angleRad, (x0, y0, x1, y1) => {
+      if (x0 < minX) minX = x0; if (x0 > maxX) maxX = x0;
+      if (y0 < minY) minY = y0; if (y0 > maxY) maxY = y0;
+      if (x1 < minX) minX = x1; if (x1 > maxX) maxX = x1;
+      if (y1 < minY) minY = y1; if (y1 > maxY) maxY = y1;
+    });
+
+    ctx.clearRect(0, 0, Wb, Hb);
+    if (maxX <= minX && maxY <= minY) return;
+    const pad = 0.07;
+    const sx = (Wb * (1 - 2 * pad)) / Math.max(1e-6, maxX - minX);
+    const sy = (Hb * (1 - 2 * pad)) / Math.max(1e-6, maxY - minY);
+    const s = Math.min(sx, sy);
+    const ox = (Wb - s * (maxX - minX)) / 2 - s * minX;
+    const oy = (Hb - s * (maxY - minY)) / 2 - s * minY;
+
+    ctx.strokeStyle = fg;
+    ctx.lineWidth = Math.max(1, dpr * 0.8);
+    ctx.globalAlpha = 0.9;
+    ctx.beginPath();
+    walk(str, angleRad, (x0, y0, x1, y1) => {
+      ctx.moveTo(ox + s * x0, Hb - (oy + s * y0));
+      ctx.lineTo(ox + s * x1, Hb - (oy + s * y1));
+    });
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  function lsLoad(name) {
+    const p = LS_PRESETS[name];
+    ls.heading = p.heading;
+    $axiom.value = p.axiom;
+    $rules.value = p.rules;
+    $angle.value = String(p.angle);
+    $depth.value = String(p.depth);
+    lsRender();
+  }
+
+  // ===========================================================================
+  // MODE SWITCHING + RENDER DISPATCH
+  // ===========================================================================
+  function renderCurrent() {
+    if (mode === 'escape') escRender('high');
+    else if (mode === 'chaos') { if (chaos.maps) chaosStart(); else chaosLoad('fern'); }
+    else if (mode === 'lsystem') lsRender();
+  }
+
+  function setMode(m) {
+    if (m === mode) return;
+    cancelAnimationFrame(chaos.raf);
+    mode = m;
+    document.querySelectorAll('.frac-modes button').forEach((b) => {
+      const on = b.dataset.mode === m;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    document.querySelectorAll('.frac-panel').forEach((p) => { p.hidden = p.dataset.panel !== m; });
+    canvas.style.cursor = m === 'escape' ? 'crosshair' : 'default';
+    renderCurrent();
+  }
+
+  document.querySelector('.frac-modes').addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (b) setMode(b.dataset.mode);
+  });
+
+  // ---- escape-time controls -------------------------------------------------
+  const escPanel = document.querySelector('[data-panel="escape"]');
+  const juliaBtn = escPanel.querySelector('[data-esc="julia"]');
+  const escHint = document.getElementById('esc-hint');
+  escPanel.addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    if (b.dataset.esc === 'julia') {
+      esc.julia = !esc.julia;
+      juliaBtn.textContent = 'Julia: ' + (esc.julia ? 'on' : 'off');
+      esc.frozen = false;
+      if (esc.julia) { esc.cx = 0; esc.cy = 0; esc.w = 3.2; escHint.textContent = 'Move over the canvas to morph · click to freeze'; }
+      else { esc.cx = -0.6; esc.cy = 0; esc.w = 3.2; escHint.textContent = 'Click to zoom in · shift-click to zoom out'; }
+      escRender('high');
+    } else if (b.dataset.esc === 'reset') {
+      if (esc.julia) { esc.cx = 0; esc.cy = 0; esc.w = 3.2; }
+      else { esc.cx = -0.6; esc.cy = 0; esc.w = 3.2; }
+      escRender('high');
+    }
+  });
+  document.getElementById('esc-power').addEventListener('input', (e) => { esc.power = Number(e.target.value); escSchedule('high'); });
+  document.getElementById('esc-iter').addEventListener('input', (e) => { esc.iter = Number(e.target.value); escSchedule('high'); });
+
+  canvas.addEventListener('pointerdown', (e) => {
+    if (mode !== 'escape') return;
+    if (esc.julia) { esc.frozen = !esc.frozen; return; }
+    const p = escPointToComplex(e);
+    esc.cx = p.re; esc.cy = p.im;
+    esc.w *= (e.shiftKey ? 2 : 0.5);
+    escRender('high');
+  });
+  canvas.addEventListener('pointermove', (e) => {
+    if (mode !== 'escape' || !esc.julia || esc.frozen) return;
+    const rect = canvas.getBoundingClientRect();
+    const fx = (e.clientX - rect.left) / rect.width;
+    const fy = (e.clientY - rect.top) / rect.height;
+    esc.cRe = -1.6 + fx * 3.2;
+    esc.cIm = 1.2 - fy * 2.4;
+    escSchedule('low');
+  });
+  canvas.addEventListener('pointerup', () => { if (mode === 'escape' && esc.julia && !esc.frozen) escSchedule('high'); });
+  canvas.addEventListener('contextmenu', (e) => { if (mode === 'escape' && !esc.julia) { e.preventDefault(); const p = escPointToComplex(e); esc.cx = p.re; esc.cy = p.im; esc.w *= 2; escRender('high'); } });
+
+  // ---- chaos controls -------------------------------------------------------
+  document.querySelector('[data-panel="chaos"]').addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    if (b.dataset.chaos === 'perturb') chaosPerturb();
+    else chaosLoad(b.dataset.chaos);
+  });
+
+  // ---- l-system controls ----------------------------------------------------
+  document.querySelector('[data-panel="lsystem"]').addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (b && b.dataset.ls) lsLoad(b.dataset.ls);
+  });
+  let lsTimer;
+  const lsDebounced = () => { clearTimeout(lsTimer); lsTimer = setTimeout(lsRender, 160); };
+  [$axiom, $rules, $angle, $depth].forEach((el) => el.addEventListener('input', lsDebounced));
+
+  // ---- boot -----------------------------------------------------------------
+  readColors();
+  sizeCanvas();
+  lsLoad('plant');       // seed the L-system inputs
+  setMode('escape');     // ...but open on the escape-time set
+  escRender('high');
+
+  let rt;
+  window.addEventListener('resize', () => {
+    clearTimeout(rt);
+    rt = window.setTimeout(() => { sizeCanvas(); renderCurrent(); }, 160);
+  });
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  mq.addEventListener('change', () => { readColors(); renderCurrent(); });
+</script>
