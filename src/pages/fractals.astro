@@ -9,9 +9,9 @@ import Base from '../layouts/Base.astro';
 
   <div class="frac">
     <div class="frac-modes" role="tablist" aria-label="Fractal generator">
-      <button type="button" role="tab" data-mode="escape" class="active" aria-selected="true">Escape-time</button>
-      <button type="button" role="tab" data-mode="chaos" aria-selected="false">Iterated Function Systems</button>
-      <button type="button" role="tab" data-mode="lsystem" aria-selected="false">L-system</button>
+      <button type="button" role="tab" data-mode="chaos" class="active" aria-selected="true">Iterated Function Systems</button>
+      <button type="button" role="tab" data-mode="lsystem" aria-selected="false">L-systems</button>
+      <button type="button" role="tab" data-mode="escape" aria-selected="false">Escape-time</button>
     </div>
 
     <canvas id="frac-canvas"></canvas>
@@ -843,8 +843,7 @@ import Base from '../layouts/Base.astro';
   readColors();
   sizeCanvas();
   lsLoad('plant');       // seed the L-system inputs
-  setMode('escape');     // ...but open on the escape-time set
-  escRender('high');
+  setMode('chaos');      // open on the IFS tab (the interactive one)
 
   let rt;
   window.addEventListener('resize', () => {
