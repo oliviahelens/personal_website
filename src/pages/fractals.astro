@@ -10,7 +10,7 @@ import Base from '../layouts/Base.astro';
   <div class="frac">
     <div class="frac-modes" role="tablist" aria-label="Fractal generator">
       <button type="button" role="tab" data-mode="escape" class="active" aria-selected="true">Escape-time</button>
-      <button type="button" role="tab" data-mode="chaos" aria-selected="false">Chaos game</button>
+      <button type="button" role="tab" data-mode="chaos" aria-selected="false">Iterated Function Systems</button>
       <button type="button" role="tab" data-mode="lsystem" aria-selected="false">L-system</button>
     </div>
 
@@ -25,12 +25,24 @@ import Base from '../layouts/Base.astro';
     </div>
 
     <div class="frac-panel" data-panel="chaos" hidden>
-      <button type="button" data-chaos="fern">Barnsley fern</button>
-      <button type="button" data-chaos="sierpinski">Sierpiński</button>
-      <button type="button" data-chaos="dragon">Dragon</button>
-      <button type="button" data-chaos="levy">Lévy C</button>
-      <span class="life-sep" role="presentation"></span>
-      <button type="button" data-chaos="perturb">New variant</button>
+      <div class="frac-row">
+        <button type="button" data-chaos="fern">Barnsley fern</button>
+        <button type="button" data-chaos="sierpinski">Sierpiński</button>
+        <button type="button" data-chaos="dragon">Dragon</button>
+        <button type="button" data-chaos="levy">Lévy C</button>
+        <span class="life-sep" role="presentation"></span>
+        <button type="button" data-chaos="perturb">New variant</button>
+        <button type="button" data-chaos="add">Add map</button>
+      </div>
+      <div class="ifs-wrap">
+        <div class="ifs-head">
+          <span>r</span><span>s</span><span>θ°</span><span>φ°</span><span>e</span><span>f</span><span>p</span><span aria-hidden="true"></span>
+        </div>
+        <div id="ifs-rows"></div>
+      </div>
+      <p class="frac-hint">Each row is one affine map — scale by r and s, rotate
+      by θ and φ, shift by (e, f), chosen with weight p. Edit any value to
+      reshape the attractor.</p>
     </div>
 
     <div class="frac-panel" data-panel="lsystem" hidden>
@@ -73,8 +85,9 @@ import Base from '../layouts/Base.astro';
     border-radius: 2px;
     width: fit-content;
     max-width: 100%;
-    overflow: hidden;
+    overflow-x: auto;
   }
+  .frac-modes button { white-space: nowrap; }
   .frac-modes button {
     font-family: inherit;
     font-size: 0.85rem;
@@ -143,7 +156,47 @@ import Base from '../layouts/Base.astro';
   }
   .frac-text input:focus { outline: none; border-color: var(--muted); }
 
-  .frac-hint { color: var(--muted); font-size: 0.8rem; }
+  .frac-hint { color: var(--muted); font-size: 0.8rem; flex-basis: 100%; }
+
+  /* IFS transform table — one editable row of r, s, θ, φ, e, f, p per affine map. */
+  .ifs-wrap { width: 100%; overflow-x: auto; margin-top: 0.35rem; }
+  .ifs-head, .ifs-row {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(3.5rem, 1fr)) 1.5rem;
+    gap: 0.4rem;
+    align-items: center;
+    min-width: 30rem;
+  }
+  .ifs-head {
+    color: var(--muted);
+    font-size: 0.75rem;
+    padding: 0 0.15rem 0.3rem;
+  }
+  .ifs-head span { text-align: center; }
+  .ifs-row { margin-bottom: 0.35rem; }
+  .ifs-row input {
+    width: 100%;
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 0.78rem;
+    color: var(--fg);
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 0.25rem 0.3rem;
+    text-align: center;
+  }
+  .ifs-row input:focus { outline: none; border-color: var(--muted); }
+  .ifs-del {
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1;
+    color: var(--muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.2rem;
+  }
+  .ifs-del:hover { color: var(--fg); }
 
   .life-sep {
     width: 1px;
@@ -297,13 +350,30 @@ import Base from '../layouts/Base.astro';
       [0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5],
     ],
   };
-  const chaos = { maps: null, base: null, cum: null, x: 0, y: 0, count: 0, tf: null, raf: 0 };
+  const chaos = { maps: null, cum: null, x: 0, y: 0, count: 0, tf: null, raf: 0, rows: [] };
   const CHAOS_CAP = 340000;
+  const $ifsRows = document.getElementById('ifs-rows');
+  const DEG = 180 / Math.PI;
+
+  // A map is stored two ways: the raw affine code [a,b,c,d,e,f,p] used for
+  // iteration, and the geometric form {r,s,th,ph,e,f,p} shown in the table.
+  //   x' = r·cosθ·x − s·sinφ·y + e ,  y' = r·sinθ·x + s·cosφ·y + f
+  function mapToRow(m) {
+    const [a, b, c, d, e, f, p] = m;
+    return { r: Math.hypot(a, c), s: Math.hypot(b, d), th: Math.atan2(c, a) * DEG, ph: Math.atan2(-b, d) * DEG, e, f, p };
+  }
+  function rowToMap(row) {
+    const th = row.th / DEG, ph = row.ph / DEG;
+    return [row.r * Math.cos(th), -row.s * Math.sin(ph), row.r * Math.sin(th), row.s * Math.cos(ph), row.e, row.f, row.p];
+  }
 
   function chaosSetup(maps) {
     chaos.maps = maps;
-    // cumulative probability table
-    let acc = 0; chaos.cum = maps.map((m) => (acc += m[6]));
+    // cumulative probability table (weights normalised so they needn't sum to 1)
+    let weights = maps.map((m) => Math.max(0, m[6]));
+    let sum = weights.reduce((a, b) => a + b, 0);
+    if (sum <= 0) { weights = maps.map(() => 1); sum = maps.length; }
+    let acc = 0; chaos.cum = weights.map((w) => (acc += w / sum));
     chaos.cum[chaos.cum.length - 1] = 1.0001;
     // find bounds by sampling the attractor
     let x = 0, y = 0, minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
@@ -334,18 +404,59 @@ import Base from '../layouts/Base.astro';
     return chaos.maps[chaos.maps.length - 1];
   }
 
-  function chaosLoad(name) {
-    chaos.base = CHAOS_PRESETS[name].map((m) => m.slice());
-    chaosSetup(chaos.base.map((m) => m.slice()));
+  function fmt(v, dp) { const k = Math.pow(10, dp); return String(Math.round(v * k) / k); }
+
+  function buildTable() {
+    $ifsRows.innerHTML = '';
+    chaos.rows.forEach((row, i) => {
+      const div = document.createElement('div');
+      div.className = 'ifs-row';
+      [['r', row.r], ['s', row.s], ['th', row.th], ['ph', row.ph], ['e', row.e], ['f', row.f], ['p', row.p]].forEach(([k, v]) => {
+        const inp = document.createElement('input');
+        const angle = (k === 'th' || k === 'ph');
+        inp.type = 'number';
+        inp.step = angle ? '1' : '0.01';
+        inp.value = fmt(v, angle ? 1 : 3);
+        inp.dataset.i = String(i);
+        inp.dataset.k = k;
+        div.appendChild(inp);
+      });
+      const del = document.createElement('button');
+      del.type = 'button'; del.className = 'ifs-del'; del.textContent = '×';
+      del.dataset.del = String(i); del.title = 'Remove map';
+      div.appendChild(del);
+      $ifsRows.appendChild(div);
+    });
+  }
+
+  function applyRows() {
+    if (!chaos.rows.length) { cancelAnimationFrame(chaos.raf); ctx.clearRect(0, 0, Wb, Hb); return; }
+    chaosSetup(chaos.rows.map(rowToMap));
     chaosStart();
   }
 
+  function chaosLoad(name) {
+    chaos.rows = CHAOS_PRESETS[name].map(mapToRow);
+    buildTable();
+    applyRows();
+  }
+
   function chaosPerturb() {
-    if (!chaos.base) return;
-    const j = () => (Math.random() - 0.5) * 0.09;
-    const maps = chaos.base.map((m) => [m[0] + j(), m[1] + j(), m[2] + j(), m[3] + j(), m[4] + j(), m[5] + j(), m[6]]);
-    chaosSetup(maps);
-    chaosStart();
+    if (!chaos.rows.length) return;
+    const j = (amt) => (Math.random() - 0.5) * amt;
+    chaos.rows = chaos.rows.map((row) => ({
+      r: Math.max(0, row.r + j(0.08)), s: Math.max(0, row.s + j(0.08)),
+      th: row.th + j(14), ph: row.ph + j(14),
+      e: row.e + j(0.12), f: row.f + j(0.12), p: row.p,
+    }));
+    buildTable();
+    applyRows();
+  }
+
+  function chaosAddRow() {
+    chaos.rows.push({ r: 0.5, s: 0.5, th: 0, ph: 0, e: 0, f: 0, p: 0.3 });
+    buildTable();
+    applyRows();
   }
 
   function chaosStart() {
@@ -483,7 +594,7 @@ import Base from '../layouts/Base.astro';
   // ===========================================================================
   function renderCurrent() {
     if (mode === 'escape') escRender('high');
-    else if (mode === 'chaos') { if (chaos.maps) chaosStart(); else chaosLoad('fern'); }
+    else if (mode === 'chaos') { if (chaos.rows.length) applyRows(); else chaosLoad('fern'); }
     else if (mode === 'lsystem') lsRender();
   }
 
@@ -549,12 +660,28 @@ import Base from '../layouts/Base.astro';
   canvas.addEventListener('pointerup', () => { if (mode === 'escape' && esc.julia && !esc.frozen) escSchedule('high'); });
   canvas.addEventListener('contextmenu', (e) => { if (mode === 'escape' && !esc.julia) { e.preventDefault(); const p = escPointToComplex(e); esc.cx = p.re; esc.cy = p.im; esc.w *= 2; escRender('high'); } });
 
-  // ---- chaos controls -------------------------------------------------------
-  document.querySelector('[data-panel="chaos"]').addEventListener('click', (e) => {
-    const b = e.target.closest('button');
+  // ---- chaos / IFS controls -------------------------------------------------
+  const chaosPanel = document.querySelector('[data-panel="chaos"]');
+  chaosPanel.addEventListener('click', (e) => {
+    const del = e.target.closest('.ifs-del');
+    if (del) {
+      if (chaos.rows.length > 1) { chaos.rows.splice(Number(del.dataset.del), 1); buildTable(); applyRows(); }
+      return;
+    }
+    const b = e.target.closest('button[data-chaos]');
     if (!b) return;
     if (b.dataset.chaos === 'perturb') chaosPerturb();
+    else if (b.dataset.chaos === 'add') chaosAddRow();
     else chaosLoad(b.dataset.chaos);
+  });
+  let chaosTimer;
+  chaosPanel.addEventListener('input', (e) => {
+    const t = e.target;
+    if (t.dataset.k === undefined) return;
+    const v = parseFloat(t.value);
+    if (!Number.isNaN(v)) chaos.rows[Number(t.dataset.i)][t.dataset.k] = v;
+    clearTimeout(chaosTimer);
+    chaosTimer = setTimeout(applyRows, 180);
   });
 
   // ---- l-system controls ----------------------------------------------------
