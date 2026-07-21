@@ -292,7 +292,7 @@ import Base from '../layouts/Base.astro';
   let ebuf, ectx;
 
   function escRender(quality) {
-    const ew = Math.min(Wb, quality === 'low' ? 260 : 900);
+    const ew = Math.min(Wb, quality === 'low' ? 520 : 900);
     const eh = Math.max(1, Math.round(ew * Hb / Wb));
     if (!ebuf) { ebuf = document.createElement('canvas'); ectx = ebuf.getContext('2d'); }
     ebuf.width = ew; ebuf.height = eh;
