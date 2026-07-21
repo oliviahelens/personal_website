@@ -593,10 +593,14 @@ import Base from '../layouts/Base.astro';
       ctx.globalAlpha = 1;
     };
     draw();
-    let gen = 0, prevSize = occ.size, lastT = 0;
+    // Generations needed for convergence scale with the slowest contraction:
+    // a ratio-0.85 map (the fern) needs ~40, a ratio-0.5 map (Sierpiński) ~9.
+    const maxRatio = Math.max(...chaos.maps.map((m) => Math.max(Math.hypot(m[0], m[2]), Math.hypot(m[1], m[3]))));
+    const targetGens = Math.max(8, Math.min(60, Math.ceil(Math.log(0.002) / Math.log(Math.min(0.98, maxRatio)))));
+    let gen = 0, lastT = 0;
     const step = (now) => {
       if (mode !== 'chaos' || chaos.algo !== 'deterministic') return;
-      if (now - lastT < 130) { chaos.raf = requestAnimationFrame(step); return; } // pace it so it's watchable
+      if (now - lastT < 110) { chaos.raf = requestAnimationFrame(step); return; } // pace it so it's watchable
       lastT = now;
       const maps = chaos.maps;
       const next = new Map();
@@ -610,9 +614,7 @@ import Base from '../layouts/Base.astro';
       }
       occ = next; gen++;
       draw();
-      const converged = Math.abs(occ.size - prevSize) <= prevSize * 0.004;
-      prevSize = occ.size;
-      if (gen < 60 && !converged) chaos.raf = requestAnimationFrame(step);
+      if (gen < targetGens) chaos.raf = requestAnimationFrame(step);
     };
     chaos.raf = requestAnimationFrame(step);
   }
