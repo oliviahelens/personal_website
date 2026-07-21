@@ -33,6 +33,8 @@ import Base from '../layouts/Base.astro';
         <span class="life-sep" role="presentation"></span>
         <button type="button" data-chaos="perturb">New variant</button>
         <button type="button" data-chaos="add">Add map</button>
+        <span class="life-sep" role="presentation"></span>
+        <button type="button" data-chaos="algo">Draw: random</button>
       </div>
       <div class="ifs-wrap">
         <div class="ifs-head">
@@ -384,7 +386,7 @@ import Base from '../layouts/Base.astro';
       [0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5],
     ],
   };
-  const chaos = { maps: null, cum: null, x: 0, y: 0, count: 0, tf: null, raf: 0, rows: [] };
+  const chaos = { maps: null, cum: null, x: 0, y: 0, count: 0, tf: null, raf: 0, rows: [], algo: 'random', bounds: null };
   const CHAOS_CAP = 340000;
   const $ifsRows = document.getElementById('ifs-rows');
   const DEG = 180 / Math.PI;
@@ -420,6 +422,7 @@ import Base from '../layouts/Base.astro';
         if (y < minY) minY = y; if (y > maxY) maxY = y;
       }
     }
+    chaos.bounds = { minX, minY, maxX, maxY };
     const pad = 0.06;
     const sx = (Wb * (1 - 2 * pad)) / Math.max(1e-6, maxX - minX);
     const sy = (Hb * (1 - 2 * pad)) / Math.max(1e-6, maxY - minY);
@@ -501,9 +504,15 @@ import Base from '../layouts/Base.astro';
 
   function chaosStart() {
     cancelAnimationFrame(chaos.raf);
+    if (chaos.algo === 'deterministic') chaosStartDeterministic();
+    else chaosStartRandom();
+  }
+
+  // Random algorithm (the chaos game): one point, one random map at a time.
+  function chaosStartRandom() {
     const dot = Math.max(1, Math.round(dpr));
     const step = () => {
-      if (mode !== 'chaos') return;
+      if (mode !== 'chaos' || chaos.algo !== 'random') return;
       ctx.fillStyle = fg;
       ctx.globalAlpha = 0.34;
       const { s, ox, oy } = chaos.tf;
@@ -521,12 +530,52 @@ import Base from '../layouts/Base.astro';
     chaos.raf = requestAnimationFrame(step);
   }
 
+  // Deterministic algorithm (the Hutchinson operator): apply EVERY map to EVERY
+  // point each generation, so a seeded cloud collapses onto the same attractor.
+  function chaosStartDeterministic() {
+    const dot = Math.max(1, Math.round(dpr));
+    const { minX, maxX, minY, maxY } = chaos.bounds;
+    const SEED = 300, CAP = 120000, MAXGEN = 13;
+    let pts = [];
+    for (let i = 0; i < SEED; i++) pts.push([minX + Math.random() * (maxX - minX), minY + Math.random() * (maxY - minY)]);
+    let gen = 0, lastT = 0;
+    const drawPts = () => {
+      const { s, ox, oy } = chaos.tf;
+      ctx.clearRect(0, 0, Wb, Hb);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.5;
+      for (let k = 0; k < pts.length; k++) ctx.fillRect(ox + s * pts[k][0], Hb - (oy + s * pts[k][1]), dot, dot);
+      ctx.globalAlpha = 1;
+    };
+    drawPts();
+    const step = (now) => {
+      if (mode !== 'chaos' || chaos.algo !== 'deterministic') return;
+      if (now - lastT < 190) { chaos.raf = requestAnimationFrame(step); return; } // pace it so it's watchable
+      lastT = now;
+      if (gen < MAXGEN) {
+        const maps = chaos.maps;
+        let next = [];
+        for (let k = 0; k < pts.length; k++) {
+          const p = pts[k];
+          for (let m = 0; m < maps.length; m++) {
+            const M = maps[m];
+            next.push([M[0] * p[0] + M[1] * p[1] + M[4], M[2] * p[0] + M[3] * p[1] + M[5]]);
+          }
+        }
+        if (next.length > CAP) { const keep = new Array(CAP); for (let x = 0; x < CAP; x++) keep[x] = next[(Math.random() * next.length) | 0]; next = keep; }
+        pts = next; gen++;
+        drawPts();
+        chaos.raf = requestAnimationFrame(step);
+      }
+    };
+    chaos.raf = requestAnimationFrame(step);
+  }
+
   // ===========================================================================
   // L-SYSTEM  (string rewriting + turtle graphics)
   // ===========================================================================
   const LS_PRESETS = {
     snowflake:  { axiom: 'F--F--F', rules: 'F=F+F--F+F', angle: 60, depth: 4, heading: 0 },
-    sierpinski: { axiom: 'F', rules: 'F=G-F-G;G=F+G+F', angle: 60, depth: 6, heading: 0 },
+    sierpinski: { axiom: 'F-G-G', rules: 'F=F-G+F+G-F;G=GG', angle: 120, depth: 5, heading: 180 },
     dragon:     { axiom: 'FX', rules: 'X=X+YF+;Y=-FX-Y', angle: 90, depth: 11, heading: 0 },
     plant:      { axiom: 'X', rules: 'X=F+[[X]-X]-F[-FX]+X;F=FF', angle: 25, depth: 5, heading: 90 },
     levy:       { axiom: 'F', rules: 'F=+F--F+', angle: 45, depth: 12, heading: 0 },
@@ -711,6 +760,11 @@ import Base from '../layouts/Base.astro';
     if (!b) return;
     if (b.dataset.chaos === 'perturb') chaosPerturb();
     else if (b.dataset.chaos === 'add') chaosAddRow();
+    else if (b.dataset.chaos === 'algo') {
+      chaos.algo = chaos.algo === 'random' ? 'deterministic' : 'random';
+      b.textContent = 'Draw: ' + chaos.algo;
+      chaosStart();
+    }
     else chaosLoad(b.dataset.chaos);
   });
   let chaosTimer;
