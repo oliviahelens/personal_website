@@ -30,7 +30,7 @@ import Base from '../layouts/Base.astro';
         <button type="button" data-chaos="sierpinski">Sierpiński</button>
         <button type="button" data-chaos="dragon">Dragon</button>
         <button type="button" data-chaos="levy">Lévy C</button>
-        <button type="button" data-chaos="koch">Koch</button>
+        <button type="button" data-chaos="koch">Koch snowflake</button>
         <button type="button" data-chaos="perturb">New variant</button>
         <button type="button" data-chaos="add">Add map</button>
         <button type="button" data-chaos="algo">Draw: deterministic</button>
@@ -292,7 +292,7 @@ import Base from '../layouts/Base.astro';
   let ebuf, ectx;
 
   function escRender(quality) {
-    const ew = Math.min(Wb, quality === 'low' ? 220 : 560);
+    const ew = Math.min(Wb, quality === 'low' ? 260 : 900);
     const eh = Math.max(1, Math.round(ew * Hb / Wb));
     if (!ebuf) { ebuf = document.createElement('canvas'); ectx = ebuf.getContext('2d'); }
     ebuf.width = ew; ebuf.height = eh;
@@ -335,7 +335,7 @@ import Base from '../layouts/Base.astro';
         else {
           const mu = i + 1 - Math.log(Math.log(Math.sqrt(r2))) / logP;
           t = Math.max(0, Math.min(1, mu / maxIter));
-          t = Math.sqrt(t); // lift the midtones
+          t = Math.pow(t, 0.72); // gentle midtone lift — keeps a soft glow but tightens the halo
         }
         const o = (py * ew + px) * 4;
         data[o]     = br + (fr - br) * t;
@@ -350,7 +350,7 @@ import Base from '../layouts/Base.astro';
     ctx.drawImage(ebuf, 0, 0, Wb, Hb);
   }
 
-  let escPending = null;
+  let escPending = null, juliaIdle;
   function escSchedule(quality) {
     escPending = quality;
     requestAnimationFrame(() => {
@@ -793,6 +793,8 @@ import Base from '../layouts/Base.astro';
     esc.cRe = -1.6 + fx * 3.2;
     esc.cIm = 1.2 - fy * 2.4;
     escSchedule('low');
+    clearTimeout(juliaIdle);
+    juliaIdle = setTimeout(() => { if (mode === 'escape' && esc.julia && !esc.frozen) escRender('high'); }, 180);
   });
   canvas.addEventListener('pointerup', () => { if (mode === 'escape' && esc.julia && !esc.frozen) escSchedule('high'); });
   canvas.addEventListener('contextmenu', (e) => { if (mode === 'escape' && !esc.julia) { e.preventDefault(); const p = escPointToComplex(e); esc.cx = p.re; esc.cy = p.im; esc.w *= 2; escRender('high'); } });
