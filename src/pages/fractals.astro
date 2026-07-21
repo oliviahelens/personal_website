@@ -26,13 +26,15 @@ import Base from '../layouts/Base.astro';
 
     <div class="frac-panel" data-panel="chaos" hidden>
       <div class="frac-row">
-        <button type="button" data-chaos="fern">Barnsley fern</button>
+        <button type="button" data-chaos="koch">Koch snowflake</button>
         <button type="button" data-chaos="sierpinski">Sierpiński</button>
         <button type="button" data-chaos="dragon">Dragon</button>
+        <button type="button" data-chaos="fern">Barnsley fern</button>
         <button type="button" data-chaos="levy">Lévy C</button>
-        <button type="button" data-chaos="koch">Koch snowflake</button>
+        <span class="life-sep" role="presentation"></span>
         <button type="button" data-chaos="perturb">New variant</button>
         <button type="button" data-chaos="add">Add map</button>
+        <span class="life-sep" role="presentation"></span>
         <button type="button" data-chaos="algo">Draw: deterministic</button>
       </div>
       <div class="ifs-wrap">
@@ -220,8 +222,8 @@ import Base from '../layouts/Base.astro';
   /* Give this page a wider column than the site default so the canvas is
      larger and the IFS controls fit on one line. Ships only with this page. */
   @media (min-width: 48rem) {
-    body .layout { max-width: 72rem; }
-    body main { max-width: 56rem; }
+    body .layout { max-width: 74rem; }
+    body main { max-width: 58rem; }
   }
 
   @media (max-width: 40rem) {
