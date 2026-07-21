@@ -3,8 +3,6 @@
 Personal site, built with [Astro](https://astro.build) and deployed to GitHub
 Pages with a custom domain (`oliviahelens.com`).
 
-Single page: bio, a list of posts pulled from Substack at build time, and
-contact links.
 
 ## Run locally
 
