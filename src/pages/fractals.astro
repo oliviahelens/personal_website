@@ -31,11 +31,9 @@ import Base from '../layouts/Base.astro';
         <button type="button" data-chaos="dragon">Dragon</button>
         <button type="button" data-chaos="levy">Lévy C</button>
         <button type="button" data-chaos="koch">Koch</button>
-      </div>
-      <div class="frac-row">
         <button type="button" data-chaos="perturb">New variant</button>
         <button type="button" data-chaos="add">Add map</button>
-        <button type="button" data-chaos="algo">Draw: random</button>
+        <button type="button" data-chaos="algo">Draw: deterministic</button>
       </div>
       <div class="ifs-wrap">
         <div class="ifs-head">
@@ -219,6 +217,13 @@ import Base from '../layouts/Base.astro';
 
   /* Phones: drop the shared header and stack each map into labeled fields
      instead of a sideways-scrolling table. Desktop layout is untouched. */
+  /* Give this page a wider column than the site default so the canvas is
+     larger and the IFS controls fit on one line. Ships only with this page. */
+  @media (min-width: 48rem) {
+    body .layout { max-width: 72rem; }
+    body main { max-width: 56rem; }
+  }
+
   @media (max-width: 40rem) {
     /* The shared layout uses align-items:flex-start, so main would otherwise
        grow to its widest child (the tab bar) and overflow the viewport.
@@ -386,15 +391,18 @@ import Base from '../layouts/Base.astro';
       [0.5, -0.5, 0.5, 0.5, 0, 0, 0.5],
       [0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5],
     ],
-    // Koch curve — four maps, each a 1/3 copy (two of them rotated ±60°).
+    // Koch curve — four 1/3 copies (two rotated ±60°), bulging downward so it
+    // serves as one outward-facing side of the snowflake (see chaosLoad).
     koch: [
       [1 / 3, 0, 0, 1 / 3, 0, 0, 0.25],
-      [1 / 6, -Math.sqrt(3) / 6, Math.sqrt(3) / 6, 1 / 6, 1 / 3, 0, 0.25],
-      [1 / 6, Math.sqrt(3) / 6, -Math.sqrt(3) / 6, 1 / 6, 0.5, Math.sqrt(3) / 6, 0.25],
+      [1 / 6, Math.sqrt(3) / 6, -Math.sqrt(3) / 6, 1 / 6, 1 / 3, 0, 0.25],
+      [1 / 6, -Math.sqrt(3) / 6, Math.sqrt(3) / 6, 1 / 6, 0.5, -Math.sqrt(3) / 6, 0.25],
       [1 / 3, 0, 0, 1 / 3, 2 / 3, 0, 0.25],
     ],
   };
-  const chaos = { maps: null, cum: null, x: 0, y: 0, count: 0, tf: null, raf: 0, rows: [], algo: 'random', bounds: null };
+  // syms/cx/cy assemble rotational copies of the attractor at draw time (the
+  // Koch snowflake is one Koch curve mirrored onto a triangle's three sides).
+  const chaos = { maps: null, cum: null, x: 0, y: 0, count: 0, tf: null, raf: 0, rows: [], algo: 'random', bounds: null, syms: [{ c: 1, s: 0 }], cx: 0, cy: 0 };
   const CHAOS_CAP = 340000;
   const $ifsRows = document.getElementById('ifs-rows');
   const DEG = 180 / Math.PI;
@@ -426,8 +434,14 @@ import Base from '../layouts/Base.astro';
       const nx = m[0] * x + m[1] * y + m[4];
       y = m[2] * x + m[3] * y + m[5]; x = nx;
       if (i > 20) {
-        if (x < minX) minX = x; if (x > maxX) maxX = x;
-        if (y < minY) minY = y; if (y > maxY) maxY = y;
+        // include rotational copies so the whole assembled figure fits the canvas
+        const dx = x - chaos.cx, dy = y - chaos.cy;
+        for (let q = 0; q < chaos.syms.length; q++) {
+          const rx = chaos.cx + chaos.syms[q].c * dx - chaos.syms[q].s * dy;
+          const ry = chaos.cy + chaos.syms[q].s * dx + chaos.syms[q].c * dy;
+          if (rx < minX) minX = rx; if (rx > maxX) maxX = rx;
+          if (ry < minY) minY = ry; if (ry > maxY) maxY = ry;
+        }
       }
     }
     chaos.bounds = { minX, minY, maxX, maxY };
@@ -488,6 +502,12 @@ import Base from '../layouts/Base.astro';
 
   function chaosLoad(name) {
     chaos.rows = CHAOS_PRESETS[name].map(mapToRow);
+    if (name === 'koch') { // assemble the snowflake from three rotated Koch curves
+      chaos.cx = 0.5; chaos.cy = Math.sqrt(3) / 6;
+      chaos.syms = [0, 120, 240].map((d) => ({ c: Math.cos(d * Math.PI / 180), s: Math.sin(d * Math.PI / 180) }));
+    } else {
+      chaos.cx = 0; chaos.cy = 0; chaos.syms = [{ c: 1, s: 0 }];
+    }
     buildTable();
     applyRows();
   }
@@ -510,6 +530,16 @@ import Base from '../layouts/Base.astro';
     applyRows();
   }
 
+  // Plot a point plus its rotational copies (used to close the Koch snowflake).
+  function plotSyms(x, y, s, ox, oy, dot) {
+    const syms = chaos.syms, cx = chaos.cx, cy = chaos.cy, dx = x - cx, dy = y - cy;
+    for (let q = 0; q < syms.length; q++) {
+      const rx = cx + syms[q].c * dx - syms[q].s * dy;
+      const ry = cy + syms[q].s * dx + syms[q].c * dy;
+      ctx.fillRect((ox + s * rx) | 0, (Hb - (oy + s * ry)) | 0, dot, dot);
+    }
+  }
+
   function chaosStart() {
     cancelAnimationFrame(chaos.raf);
     if (chaos.algo === 'deterministic') chaosStartDeterministic();
@@ -529,7 +559,7 @@ import Base from '../layouts/Base.astro';
         const m = pickMap();
         const nx = m[0] * x + m[1] * y + m[4];
         y = m[2] * x + m[3] * y + m[5]; x = nx;
-        ctx.fillRect(ox + s * x, Hb - (oy + s * y), dot, dot); // flip y (canvas y grows down)
+        plotSyms(x, y, s, ox, oy, dot); // flip y (canvas y grows down)
       }
       chaos.x = x; chaos.y = y; chaos.count += 3500;
       ctx.globalAlpha = 1;
@@ -559,7 +589,7 @@ import Base from '../layouts/Base.astro';
     const draw = () => {
       ctx.clearRect(0, 0, Wb, Hb);
       ctx.fillStyle = fg; ctx.globalAlpha = 0.85;
-      for (const [, p] of occ) ctx.fillRect((ox + s * p[0]) | 0, (Hb - (oy + s * p[1])) | 0, dot, dot);
+      for (const [, p] of occ) plotSyms(p[0], p[1], s, ox, oy, dot);
       ctx.globalAlpha = 1;
     };
     draw();
@@ -618,13 +648,13 @@ import Base from '../layouts/Base.astro';
   function expand(axiom, rules, depth) {
     let s = axiom;
     for (let d = 0; d < depth; d++) {
-      let out = '';
+      let out = '', overflow = false;
       for (let i = 0; i < s.length; i++) {
         out += (rules[s[i]] !== undefined) ? rules[s[i]] : s[i];
-        if (out.length > LS_MAXLEN) return out; // guard against blow-up
+        if (out.length > LS_MAXLEN) { overflow = true; break; }
       }
+      if (overflow) break; // next generation is too large — keep the last full one
       s = out;
-      if (s.length > LS_MAXLEN) break;
     }
     return s;
   }
@@ -779,7 +809,7 @@ import Base from '../layouts/Base.astro';
     else if (b.dataset.chaos === 'add') chaosAddRow();
     else if (b.dataset.chaos === 'algo') {
       chaos.algo = chaos.algo === 'random' ? 'deterministic' : 'random';
-      b.textContent = 'Draw: ' + chaos.algo;
+      b.textContent = 'Draw: ' + (chaos.algo === 'random' ? 'deterministic' : 'random'); // label = the mode you'll switch to
       applyRows(); // full reset (clear canvas, reset counters) so each toggle renders fresh
     }
     else chaosLoad(b.dataset.chaos);
