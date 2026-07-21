@@ -30,10 +30,11 @@ import Base from '../layouts/Base.astro';
         <button type="button" data-chaos="sierpinski">Sierpiński</button>
         <button type="button" data-chaos="dragon">Dragon</button>
         <button type="button" data-chaos="levy">Lévy C</button>
-        <span class="life-sep" role="presentation"></span>
+        <button type="button" data-chaos="koch">Koch</button>
+      </div>
+      <div class="frac-row">
         <button type="button" data-chaos="perturb">New variant</button>
         <button type="button" data-chaos="add">Add map</button>
-        <span class="life-sep" role="presentation"></span>
         <button type="button" data-chaos="algo">Draw: random</button>
       </div>
       <div class="ifs-wrap">
@@ -385,6 +386,13 @@ import Base from '../layouts/Base.astro';
       [0.5, -0.5, 0.5, 0.5, 0, 0, 0.5],
       [0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5],
     ],
+    // Koch curve — four maps, each a 1/3 copy (two of them rotated ±60°).
+    koch: [
+      [1 / 3, 0, 0, 1 / 3, 0, 0, 0.25],
+      [1 / 6, -Math.sqrt(3) / 6, Math.sqrt(3) / 6, 1 / 6, 1 / 3, 0, 0.25],
+      [1 / 6, Math.sqrt(3) / 6, -Math.sqrt(3) / 6, 1 / 6, 0.5, Math.sqrt(3) / 6, 0.25],
+      [1 / 3, 0, 0, 1 / 3, 2 / 3, 0, 0.25],
+    ],
   };
   const chaos = { maps: null, cum: null, x: 0, y: 0, count: 0, tf: null, raf: 0, rows: [], algo: 'random', bounds: null };
   const CHAOS_CAP = 340000;
@@ -535,37 +543,46 @@ import Base from '../layouts/Base.astro';
   function chaosStartDeterministic() {
     const dot = Math.max(1, Math.round(dpr));
     const { minX, maxX, minY, maxY } = chaos.bounds;
-    const SEED = 300, CAP = 120000, MAXGEN = 13;
-    let pts = [];
-    for (let i = 0; i < SEED; i++) pts.push([minX + Math.random() * (maxX - minX), minY + Math.random() * (maxY - minY)]);
-    let gen = 0, lastT = 0;
-    const drawPts = () => {
-      const { s, ox, oy } = chaos.tf;
+    const { s, ox, oy } = chaos.tf;
+    // Key each point by the pixel it lands on, so the set dedupes by pixel and
+    // stays bounded (no runaway growth, no diversity loss) as it converges.
+    const key = (fx, fy) => (((Hb - (oy + s * fy)) | 0) * (Wb + 1)) + ((ox + s * fx) | 0);
+    // Seed with a grid spanning the attractor's bounding box — you watch the
+    // square collapse onto the attractor.
+    let occ = new Map();
+    const N = 220;
+    for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
+      const fx = minX + (i / (N - 1)) * (maxX - minX);
+      const fy = minY + (j / (N - 1)) * (maxY - minY);
+      occ.set(key(fx, fy), [fx, fy]);
+    }
+    const draw = () => {
       ctx.clearRect(0, 0, Wb, Hb);
-      ctx.fillStyle = fg; ctx.globalAlpha = 0.5;
-      for (let k = 0; k < pts.length; k++) ctx.fillRect(ox + s * pts[k][0], Hb - (oy + s * pts[k][1]), dot, dot);
+      ctx.fillStyle = fg; ctx.globalAlpha = 0.85;
+      for (const [, p] of occ) ctx.fillRect((ox + s * p[0]) | 0, (Hb - (oy + s * p[1])) | 0, dot, dot);
       ctx.globalAlpha = 1;
     };
-    drawPts();
+    draw();
+    let gen = 0, prevSize = occ.size, lastT = 0;
     const step = (now) => {
       if (mode !== 'chaos' || chaos.algo !== 'deterministic') return;
-      if (now - lastT < 190) { chaos.raf = requestAnimationFrame(step); return; } // pace it so it's watchable
+      if (now - lastT < 130) { chaos.raf = requestAnimationFrame(step); return; } // pace it so it's watchable
       lastT = now;
-      if (gen < MAXGEN) {
-        const maps = chaos.maps;
-        let next = [];
-        for (let k = 0; k < pts.length; k++) {
-          const p = pts[k];
-          for (let m = 0; m < maps.length; m++) {
-            const M = maps[m];
-            next.push([M[0] * p[0] + M[1] * p[1] + M[4], M[2] * p[0] + M[3] * p[1] + M[5]]);
-          }
+      const maps = chaos.maps;
+      const next = new Map();
+      for (const [, p] of occ) {
+        for (let m = 0; m < maps.length; m++) {
+          const M = maps[m];
+          const nx = M[0] * p[0] + M[1] * p[1] + M[4];
+          const ny = M[2] * p[0] + M[3] * p[1] + M[5];
+          next.set(key(nx, ny), [nx, ny]);
         }
-        if (next.length > CAP) { const keep = new Array(CAP); for (let x = 0; x < CAP; x++) keep[x] = next[(Math.random() * next.length) | 0]; next = keep; }
-        pts = next; gen++;
-        drawPts();
-        chaos.raf = requestAnimationFrame(step);
       }
+      occ = next; gen++;
+      draw();
+      const converged = Math.abs(occ.size - prevSize) <= prevSize * 0.004;
+      prevSize = occ.size;
+      if (gen < 60 && !converged) chaos.raf = requestAnimationFrame(step);
     };
     chaos.raf = requestAnimationFrame(step);
   }
@@ -763,7 +780,7 @@ import Base from '../layouts/Base.astro';
     else if (b.dataset.chaos === 'algo') {
       chaos.algo = chaos.algo === 'random' ? 'deterministic' : 'random';
       b.textContent = 'Draw: ' + chaos.algo;
-      chaosStart();
+      applyRows(); // full reset (clear canvas, reset counters) so each toggle renders fresh
     }
     else chaosLoad(b.dataset.chaos);
   });
