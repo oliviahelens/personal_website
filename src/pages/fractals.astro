@@ -17,7 +17,7 @@ import Base from '../layouts/Base.astro';
     <canvas id="frac-canvas"></canvas>
 
     <div class="frac-panel" data-panel="escape">
-      <button type="button" data-esc="julia">Julia: off</button>
+      <button type="button" data-esc="julia">Julia</button>
       <label class="frac-range">Power <input type="range" id="esc-power" min="2" max="6" step="1" value="2" /></label>
       <label class="frac-range">Detail <input type="range" id="esc-iter" min="40" max="400" step="10" value="130" /></label>
       <button type="button" data-esc="reset">Reset view</button>
@@ -515,7 +515,7 @@ import Base from '../layouts/Base.astro';
     if (!b) return;
     if (b.dataset.esc === 'julia') {
       esc.julia = !esc.julia;
-      juliaBtn.textContent = 'Julia: ' + (esc.julia ? 'on' : 'off');
+      juliaBtn.textContent = esc.julia ? 'Mandelbrot' : 'Julia'; // label = the set you'll switch to
       esc.frozen = false;
       if (esc.julia) { esc.cx = 0; esc.cy = 0; esc.w = 3.2; escHint.textContent = 'Move over the canvas to morph · click to freeze'; }
       else { esc.cx = -0.6; esc.cy = 0; esc.w = 3.2; escHint.textContent = 'Click to zoom in · shift-click to zoom out'; }
