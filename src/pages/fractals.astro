@@ -33,7 +33,6 @@ import Base from '../layouts/Base.astro';
         <button type="button" data-chaos="levy">Lévy C</button>
         <span class="life-sep" role="presentation"></span>
         <button type="button" data-chaos="perturb">New variant</button>
-        <button type="button" data-chaos="add">Add map</button>
         <span class="life-sep" role="presentation"></span>
         <button type="button" data-chaos="algo">Draw: deterministic</button>
       </div>
@@ -43,6 +42,7 @@ import Base from '../layouts/Base.astro';
         </div>
         <div id="ifs-rows"></div>
       </div>
+      <button type="button" data-chaos="add" class="frac-addmap">+ Add map</button>
       <p class="frac-hint">Each row is one affine map. Scale by r and s, rotate
       by θ and φ, shift by (e, f), chosen with weight p.</p>
     </div>
@@ -158,6 +158,7 @@ import Base from '../layouts/Base.astro';
   }
   .frac-text input:focus { outline: none; border-color: var(--muted); }
 
+  .frac-addmap { margin-top: 0.6rem; }
   .frac-hint { color: var(--muted); font-size: 0.8rem; flex-basis: 100%; }
 
   .life-sep {
