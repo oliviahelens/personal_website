@@ -119,7 +119,7 @@ import Base from '../layouts/Base.astro';
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.38rem;
+    gap: 0.32rem;
     width: 100%;
   }
 
@@ -130,7 +130,7 @@ import Base from '../layouts/Base.astro';
     background: transparent;
     border: 1px solid var(--rule);
     border-radius: 2px;
-    padding: 0.24rem 0.52rem;
+    padding: 0.24rem 0.4rem;
     cursor: pointer;
     transition: color 0.15s, border-color 0.15s;
   }
@@ -164,7 +164,7 @@ import Base from '../layouts/Base.astro';
     width: 1px;
     align-self: stretch;
     background: var(--rule);
-    margin: 0.1rem 0.22rem;
+    margin: 0.1rem 0.16rem;
   }
 
   @media (max-width: 48rem) {
@@ -219,13 +219,6 @@ import Base from '../layouts/Base.astro';
 
   /* Phones: drop the shared header and stack each map into labeled fields
      instead of a sideways-scrolling table. Desktop layout is untouched. */
-  /* Give this page a wider column than the site default so the canvas is
-     larger and the IFS controls fit on one line. Ships only with this page. */
-  @media (min-width: 48rem) {
-    body .layout { max-width: 74rem; }
-    body main { max-width: 58rem; }
-  }
-
   @media (max-width: 40rem) {
     /* The shared layout uses align-items:flex-start, so main would otherwise
        grow to its widest child (the tab bar) and overflow the viewport.
