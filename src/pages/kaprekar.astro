@@ -7,12 +7,6 @@ import Base from '../layouts/Base.astro';
 >
   <h1>Kaprekar's Routine</h1>
 
-  <p class="kap-intro">
-    Take a number, write its digits in descending then ascending order, subtract, and repeat. In base 10 every
-    4-digit number tumbles into <b>6174</b> within seven steps, and every 3-digit number into <b>495</b> —
-    Kaprekar's constants. Some bases have their own; some only cycle. Type a number, or change the base.
-  </p>
-
   <div class="kap">
     <div class="kap-controls">
       <label class="kap-field">Base<input id="kap-base" type="number" min="2" max="36" value="10" /></label>
@@ -37,7 +31,6 @@ import Base from '../layouts/Base.astro';
 </Base>
 
 <style>
-  .kap-intro { max-width: var(--measure); }
   .kap { margin: 1.75rem 0 1.25rem; }
 
   .kap-controls {
