@@ -92,14 +92,18 @@ import Base from '../layouts/Base.astro';
      These rules (and the accent tokens) must be global to reach them; the
      .kap-* names appear only on this page, so it stays effectively local. -->
 <style is:global>
-  .kap { --k-accent: #9a7420; --k-hi: #4f6f82; --k-lo: #a3543f; --k-cyc: #7d5f88; }
+  .kap { --k-glow: rgba(70, 55, 35, 0.30); }
   @media (prefers-color-scheme: dark) {
-    .kap { --k-accent: #c9a24e; --k-hi: #8ba0ae; --k-lo: #cd8a6d; --k-cyc: #b191a6; }
+    .kap { --k-glow: rgba(240, 232, 216, 0.6); }
   }
 
-  .kap-status .win { color: var(--k-accent); }
-  .kap-status .cyc { color: var(--k-cyc); }
-  .kap-status .err { color: var(--k-lo); }
+  @keyframes kap-pulse {
+    0%, 100% { box-shadow: 0 0 4px 0 var(--k-glow); }
+    50%      { box-shadow: 0 0 16px 3px var(--k-glow); }
+  }
+
+  .kap-status .win { color: var(--fg); text-shadow: 0 0 9px var(--k-glow); }
+  .kap-status .cyc, .kap-status .err { color: var(--muted); }
 
   #kap-steps { display: flex; flex-direction: column; gap: 0.5rem; }
   .kap-step {
@@ -111,8 +115,7 @@ import Base from '../layouts/Base.astro';
     border: 1px solid var(--rule);
     border-radius: 2px;
   }
-  .kap-step.is-constant { border-color: var(--k-accent); }
-  .kap-step.is-cycle { border-color: var(--k-cyc); }
+  .kap-step.is-cycle { border-color: var(--muted); border-style: dashed; }
   .kap-idx {
     font-family: ui-monospace, 'SF Mono', Menlo, monospace;
     font-size: 0.75rem;
@@ -146,10 +149,12 @@ import Base from '../layouts/Base.astro';
     border-radius: 2px;
     color: var(--fg);
   }
-  .kap-digit.hi { border-color: var(--k-hi); color: var(--k-hi); }
-  .kap-digit.lo { border-color: var(--k-lo); color: var(--k-lo); }
   .kap-digit.res { border-color: var(--muted); }
-  .kap-step.is-constant .kap-digit.res { border-color: var(--k-accent); color: var(--k-accent); }
+  .kap-step.is-constant .kap-digit.res {
+    border-color: var(--fg);
+    color: var(--fg);
+    animation: kap-pulse 2.6s ease-in-out infinite;
+  }
 </style>
 
 <script>
