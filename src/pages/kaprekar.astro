@@ -1,0 +1,354 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base
+  title="Kaprekar's Routine — Olivia H. Scharfman"
+  description="An interactive Kaprekar's Routine: sort a number's digits high and low, subtract, repeat — and watch it fall into a constant. Works in any base."
+>
+  <h1>Kaprekar's Routine</h1>
+
+  <p class="kap-intro">
+    Take a number, write its digits in descending then ascending order, subtract, and repeat. In base 10 every
+    4-digit number tumbles into <b>6174</b> within seven steps, and every 3-digit number into <b>495</b> —
+    Kaprekar's constants. Some bases have their own; some only cycle. Type a number, or change the base.
+  </p>
+
+  <div class="kap">
+    <div class="kap-controls">
+      <label class="kap-field">Base<input id="kap-base" type="number" min="2" max="36" value="10" /></label>
+      <label class="kap-field">Digits<input id="kap-digits" type="number" min="2" max="8" value="4" /></label>
+      <label class="kap-field grow">Start<input id="kap-start" type="text" value="3524" spellcheck="false" autocomplete="off" /></label>
+    </div>
+    <div class="kap-buttons">
+      <button type="button" id="kap-run" class="primary">Run</button>
+      <button type="button" id="kap-step">Step</button>
+      <button type="button" id="kap-random">Random</button>
+      <button type="button" id="kap-reset">Reset</button>
+    </div>
+    <p id="kap-space" class="kap-space"></p>
+    <div id="kap-status" class="kap-status" aria-live="polite"></div>
+    <div id="kap-steps"></div>
+  </div>
+
+  <p class="kap-credit">
+    Inspired by <a href="https://arxiv.org/abs/1710.06308">The Base Dependent Behavior of Kaprekar's Routine</a>
+    (D. Hanover, 2017).
+  </p>
+</Base>
+
+<style>
+  .kap-intro { max-width: var(--measure); }
+  .kap { margin: 1.75rem 0 1.25rem; }
+
+  .kap-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 1rem;
+    margin-bottom: 0.9rem;
+  }
+  .kap-field {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  .kap-field.grow { flex: 1 1 12rem; }
+  .kap-field input {
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 0.95rem;
+    color: var(--fg);
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 0.34rem 0.5rem;
+  }
+  .kap-field input[type='number'] { width: 4.5rem; }
+  .kap-field.grow input { width: 100%; letter-spacing: 0.12em; }
+  .kap-field input:focus { outline: none; border-color: var(--muted); }
+  .kap-field input::-webkit-inner-spin-button { appearance: none; margin: 0; }
+
+  .kap-buttons { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .kap-buttons button {
+    font-family: inherit;
+    font-size: 0.85rem;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 0.32rem 0.75rem;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+  }
+  .kap-buttons button:hover { color: var(--fg); border-color: var(--muted); }
+  .kap-buttons button.primary { color: var(--fg); background: var(--rule); border-color: var(--rule); }
+  .kap-buttons button.primary:hover { border-color: var(--muted); }
+  .kap-buttons button:disabled { opacity: 0.45; cursor: default; }
+
+  .kap-space {
+    margin: 1rem 0 0.4rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .kap-status { min-height: 1.4rem; margin: 0.2rem 0 1rem; font-size: 0.95rem; color: var(--muted); }
+</style>
+
+<!-- Step rows are built in JS, so they never get Astro's scoped class hash.
+     These rules (and the accent tokens) must be global to reach them; the
+     .kap-* names appear only on this page, so it stays effectively local. -->
+<style is:global>
+  .kap { --k-accent: #9a7420; --k-hi: #4f6f82; --k-lo: #a3543f; --k-cyc: #7d5f88; }
+  @media (prefers-color-scheme: dark) {
+    .kap { --k-accent: #c9a24e; --k-hi: #8ba0ae; --k-lo: #cd8a6d; --k-cyc: #b191a6; }
+  }
+
+  .kap-status .win { color: var(--k-accent); }
+  .kap-status .cyc { color: var(--k-cyc); }
+  .kap-status .err { color: var(--k-lo); }
+
+  #kap-steps { display: flex; flex-direction: column; gap: 0.5rem; }
+  .kap-step {
+    display: grid;
+    grid-template-columns: 1.6rem 1fr;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+  }
+  .kap-step.is-constant { border-color: var(--k-accent); }
+  .kap-step.is-cycle { border-color: var(--k-cyc); }
+  .kap-idx {
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-align: center;
+  }
+  .kap-math { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.6rem; }
+  .kap-nb { display: flex; flex-direction: column; gap: 0.2rem; }
+  .kap-nl {
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+  .kap-num { display: flex; gap: 0.22rem; }
+  .kap-op {
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 1.05rem;
+    color: var(--muted);
+    align-self: center;
+    padding-bottom: 0.15rem;
+  }
+  .kap-digit {
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 1rem;
+    width: 1.55rem;
+    height: 1.95rem;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    color: var(--fg);
+  }
+  .kap-digit.hi { border-color: var(--k-hi); color: var(--k-hi); }
+  .kap-digit.lo { border-color: var(--k-lo); color: var(--k-lo); }
+  .kap-digit.res { border-color: var(--muted); }
+  .kap-step.is-constant .kap-digit.res { border-color: var(--k-accent); color: var(--k-accent); }
+</style>
+
+<script>
+  // ── Kaprekar engine (same tested core as the standalone playground) ────────
+  const GLYPHS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+  function digitsOf(n, base, len) {
+    const d = new Array(len);
+    for (let i = len - 1; i >= 0; i--) { d[i] = n % base; n = Math.floor(n / base); }
+    return d;
+  }
+  function valueOf(digits, base) {
+    let v = 0;
+    for (let i = 0; i < digits.length; i++) v = v * base + digits[i];
+    return v;
+  }
+  function isRepdigit(digits) {
+    for (let i = 1; i < digits.length; i++) if (digits[i] !== digits[0]) return false;
+    return true;
+  }
+  function format(n, base, len) {
+    return digitsOf(n, base, len).map((x) => (base <= 36 ? GLYPHS[x] : '[' + x + ']')).join('');
+  }
+  function step(n, base, len) {
+    const digits = digitsOf(n, base, len);
+    const desc = digits.slice().sort((a, b) => b - a);
+    const asc = digits.slice().sort((a, b) => a - b);
+    return { n, digits, desc, asc, next: valueOf(desc, base) - valueOf(asc, base) };
+  }
+  function path(n, base, len, maxSteps) {
+    maxSteps = maxSteps || 1000;
+    const steps = [], seen = new Map();
+    let cur = n; seen.set(cur, 0);
+    for (let i = 0; i < maxSteps; i++) {
+      const s = step(cur, base, len);
+      steps.push(s);
+      if (s.next === cur) return { steps, outcome: cur === 0 ? 'zero' : 'fixed', iterations: i, constant: cur };
+      if (s.next === 0) { steps.push(step(0, base, len)); return { steps, outcome: 'zero', iterations: i + 1, constant: 0 }; }
+      if (seen.has(s.next)) { const start = seen.get(s.next); return { steps, outcome: 'cycle', iterations: i + 1, cycle: steps.slice(start).map((x) => x.n) }; }
+      seen.set(s.next, steps.length); cur = s.next;
+    }
+    return { steps, outcome: 'cutoff', iterations: maxSteps };
+  }
+
+  // Space summary: does this base/digit space fall into one constant, or cycle?
+  function combosWithRep(n, k) { let num = 1, den = 1; for (let i = 0; i < k; i++) { num *= n + k - 1 - i; den *= i + 1; } return num / den; }
+  function analyze(base, len) {
+    const memo = new Map(), fixedSet = new Set(); let hasCycle = false;
+    function resolve(start) {
+      const walk = [], idx = new Map(); let cur = start;
+      while (true) {
+        if (memo.has(cur)) { let t = memo.get(cur); for (let i = walk.length - 1; i >= 0; i--) { t = { dist: t.dist + 1, root: t.root }; memo.set(walk[i], t); } return; }
+        if (idx.has(cur)) {
+          const s = idx.get(cur), loop = walk.slice(s), root = loop.length === 1 ? 'fix:' + loop[0] : 'cyc:' + Math.min.apply(null, loop);
+          if (loop.length === 1) { if (loop[0] !== 0) fixedSet.add(loop[0]); } else hasCycle = true;
+          for (let i = s; i < walk.length; i++) memo.set(walk[i], { dist: 0, root });
+          let d = 0; for (let i = s - 1; i >= 0; i--) { d++; memo.set(walk[i], { dist: d, root }); } return;
+        }
+        idx.set(cur, walk.length); walk.push(cur); cur = step(cur, base, len).next;
+      }
+    }
+    const tup = new Array(len).fill(0);
+    (function en(pos, mind) {
+      if (pos === len) { if (!isRepdigit(tup)) { const v = valueOf(tup.slice().sort((a, b) => b - a), base); if (!memo.has(v)) resolve(v); } return; }
+      for (let d = mind; d < base; d++) { tup[pos] = d; en(pos + 1, d); }
+    })(0, 0);
+    const fp = [...fixedSet];
+    const constant = (fp.length === 1 && !hasCycle) ? fp[0] : null;
+    let maxIter = 0;
+    if (constant != null) { const key = 'fix:' + constant; for (const m of memo.values()) if (m.root === key && m.dist > maxIter) maxIter = m.dist; }
+    return { constant, maxIter, hasCycle, fixedPoints: fp.length };
+  }
+
+  // ── controller ────────────────────────────────────────────────────────────
+  const $ = (id) => document.getElementById(id);
+  const state = { base: 10, len: 4 };
+  const spaceCache = new Map();
+  let routine = { path: null, shown: 0 }, runToken = 0;
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  function clampInt(v, lo, hi, dflt) { let n = parseInt(v, 10); if (!Number.isFinite(n)) n = dflt; return Math.max(lo, Math.min(hi, n)); }
+  function parseValue(str, base) {
+    str = (str || '').trim().toUpperCase(); if (!str) return null;
+    let v = 0; for (const ch of str) { const d = GLYPHS.indexOf(ch); if (d < 0 || d >= base) return null; v = v * base + d; }
+    return v;
+  }
+  function getSpace() {
+    const key = state.base + '_' + state.len;
+    if (spaceCache.has(key)) return spaceCache.get(key);
+    const res = combosWithRep(state.base, state.len) > 300000 ? { tooBig: true } : analyze(state.base, state.len);
+    spaceCache.set(key, res); return res;
+  }
+
+  function renderSpace() {
+    const a = getSpace(), box = $('kap-space');
+    if (a.tooBig) { box.textContent = 'This base and digit count is too large to summarize — the routine still runs.'; return; }
+    if (a.constant != null) {
+      const dec = state.base !== 10 ? ` (= ${a.constant} in base 10)` : '';
+      box.innerHTML = `Every non-trivial number here falls into <b style="color:var(--fg)">${format(a.constant, state.base, state.len)}</b>${dec} within <b style="color:var(--fg)">${a.maxIter}</b> step${a.maxIter === 1 ? '' : 's'}.`;
+    } else if (a.hasCycle) {
+      box.innerHTML = `This space has <b style="color:var(--fg)">no single constant</b> — some numbers loop in cycles instead.`;
+    } else {
+      box.textContent = 'Every number here collapses to 0.';
+    }
+  }
+
+  function numBlock(label, digits, cls) {
+    const nb = document.createElement('div'); nb.className = 'kap-nb';
+    const nl = document.createElement('div'); nl.className = 'kap-nl'; nl.textContent = label;
+    const num = document.createElement('div'); num.className = 'kap-num';
+    digits.forEach((d) => { const c = document.createElement('div'); c.className = 'kap-digit ' + cls; c.textContent = GLYPHS[d]; num.appendChild(c); });
+    nb.appendChild(nl); nb.appendChild(num); return nb;
+  }
+  function op(sym) { const o = document.createElement('div'); o.className = 'kap-op'; o.textContent = sym; return o; }
+
+  function rowKind(p, i) {
+    if (i === p.steps.length - 1) {
+      if (p.outcome === 'fixed' || p.outcome === 'zero') return 'is-constant';
+      if (p.outcome === 'cycle') return 'is-cycle';
+    }
+    return '';
+  }
+  function stepRow(s, idx, kind) {
+    const row = document.createElement('div'); row.className = 'kap-step ' + kind;
+    const ix = document.createElement('div'); ix.className = 'kap-idx'; ix.textContent = idx;
+    const math = document.createElement('div'); math.className = 'kap-math';
+    math.appendChild(numBlock('descending', s.desc, 'hi'));
+    math.appendChild(op('−'));
+    math.appendChild(numBlock('ascending', s.asc, 'lo'));
+    math.appendChild(op('='));
+    math.appendChild(numBlock('result', digitsOf(s.next, state.base, state.len), 'res'));
+    row.appendChild(ix); row.appendChild(math); return row;
+  }
+
+  function outcomeMessage(p) {
+    if (p.outcome === 'fixed') return `<span class="win">Reached the Kaprekar constant ${format(p.constant, state.base, state.len)} in ${p.iterations} step${p.iterations === 1 ? '' : 's'}.</span>`;
+    if (p.outcome === 'cycle') return `<span class="cyc">Entered a ${p.cycle.length}-cycle: ${p.cycle.map((v) => format(v, state.base, state.len)).join(' → ')} → …</span>`;
+    if (p.outcome === 'zero') return `<span class="cyc">Collapsed to 0.</span>`;
+    return '';
+  }
+  function setStatus(html) { $('kap-status').innerHTML = html; }
+
+  function buildPath() {
+    const v = parseValue($('kap-start').value, state.base);
+    if (v == null) { setStatus(`<span class="err">Not a valid base-${state.base} number.</span>`); return null; }
+    if (v >= Math.pow(state.base, state.len)) {
+      let len = state.len; while (v >= Math.pow(state.base, len) && len < 8) len++;
+      state.len = len; $('kap-digits').value = String(len); spaceRefresh();
+    }
+    if (isRepdigit(digitsOf(v, state.base, state.len))) { setStatus(`<span class="err">All digits equal → collapses straight to 0. Pick a number with at least two distinct digits.</span>`); return null; }
+    return path(v, state.base, state.len);
+  }
+
+  async function runRoutine() {
+    const p = buildPath(); if (!p) return;
+    routine = { path: p, shown: 0 };
+    const box = $('kap-steps'); box.innerHTML = '';
+    const token = ++runToken; setBusy(true);
+    for (let i = 0; i < p.steps.length; i++) {
+      if (token !== runToken) return;
+      box.appendChild(stepRow(p.steps[i], i + 1, rowKind(p, i)));
+      await sleep(p.steps.length > 12 ? 90 : 240);
+    }
+    routine.shown = p.steps.length; setStatus(outcomeMessage(p)); setBusy(false);
+  }
+  function stepRoutine() {
+    if (!routine.path || routine.shown >= routine.path.steps.length) {
+      const p = buildPath(); if (!p) return; routine = { path: p, shown: 0 }; $('kap-steps').innerHTML = '';
+    }
+    const p = routine.path, i = routine.shown;
+    $('kap-steps').appendChild(stepRow(p.steps[i], i + 1, rowKind(p, i)));
+    routine.shown++;
+    setStatus(routine.shown >= p.steps.length ? outcomeMessage(p) : `${routine.shown} step${routine.shown === 1 ? '' : 's'} shown — keep going…`);
+  }
+  function randomStart() {
+    const span = Math.pow(state.base, state.len); let v, t = 0;
+    do { v = Math.floor(Math.random() * span); t++; } while (isRepdigit(digitsOf(v, state.base, state.len)) && t < 60);
+    $('kap-start').value = format(v, state.base, state.len).replace(/^0+(?=.)/, ''); runRoutine();
+  }
+  function resetRoutine() { runToken++; routine = { path: null, shown: 0 }; $('kap-steps').innerHTML = ''; setStatus(''); setBusy(false); }
+  function setBusy(b) { $('kap-run').disabled = b; $('kap-random').disabled = b; }
+
+  function spaceRefresh() { renderSpace(); }
+  function onParams() { state.base = clampInt($('kap-base').value, 2, 36, 10); state.len = clampInt($('kap-digits').value, 2, 8, 4); $('kap-base').value = state.base; $('kap-digits').value = state.len; resetRoutine(); renderSpace(); }
+
+  $('kap-base').addEventListener('change', onParams);
+  $('kap-digits').addEventListener('change', onParams);
+  $('kap-run').addEventListener('click', runRoutine);
+  $('kap-step').addEventListener('click', stepRoutine);
+  $('kap-random').addEventListener('click', randomStart);
+  $('kap-reset').addEventListener('click', resetRoutine);
+  $('kap-start').addEventListener('keydown', (e) => { if (e.key === 'Enter') runRoutine(); });
+
+  renderSpace();
+  runRoutine();
+</script>
