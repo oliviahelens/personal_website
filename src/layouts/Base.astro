@@ -13,7 +13,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
 const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
 const isCurrent = (href: string) => (href.replace(/\/+$/, '') || '/') === path;
 
-const links = [
+const pages = [
   { href: '/', label: 'Home' },
   { href: '/reading', label: 'Bookshelves' },
   { href: '/gallery', label: 'Gallery' },
@@ -23,6 +23,9 @@ const links = [
   { href: '/kaprekar', label: 'Kaprekar' },
   { href: 'https://libraryofbabel.info/', label: 'Library of Babel' },
   { href: 'https://www.yourworldoftext.com/oliviascharfman', label: 'World of Text' },
+];
+
+const elsewhere = [
   { href: 'https://oliviahelens.substack.com/', label: 'Substack' },
   { href: 'https://x.com/OliviaHelenS', label: 'X' },
   { href: 'https://www.linkedin.com/in/oliviascharfman/', label: 'LinkedIn' },
@@ -54,7 +57,11 @@ const links = [
     <div class="layout">
       <aside class="sidebar">
         <nav class="links" aria-label="Site">
-          {links.map((l) => (
+          {pages.map((l) => (
+            <a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a>
+          ))}
+          <span class="divider" role="presentation"></span>
+          {elsewhere.map((l) => (
             <a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a>
           ))}
         </nav>
