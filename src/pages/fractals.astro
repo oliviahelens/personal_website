@@ -225,6 +225,10 @@ import Base from '../layouts/Base.astro';
        grow to its widest child (the tab bar) and overflow the viewport.
        This rule ships only with the fractals page. */
     main { width: 100%; min-width: 0; }
+    /* Three tabs don't fit on one phone-width line; wrapping shows all of them
+       instead of hiding the third behind a sideways scroll. */
+    .frac-modes { flex-wrap: wrap; width: 100%; }
+    .frac-modes button { flex: 1 1 auto; border-right: none; text-align: center; }
     .ifs-wrap { overflow-x: visible; }
     .ifs-head { display: none; }
     .ifs-row {

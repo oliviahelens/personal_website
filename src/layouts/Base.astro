@@ -64,6 +64,7 @@ const elsewhere = [
           height="400"
         />
         <nav class="links" aria-label="Site">
+          <span class="divider" role="presentation"></span>
           {pages.map((l) => (
             <a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a>
           ))}
