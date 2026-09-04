@@ -34,6 +34,11 @@ const elsewhere = [
   { href: 'https://open.spotify.com/user/12149517676?si=21244704ac1346a8', label: 'Spotify' },
   { href: '/contact', label: 'Contact' },
 ];
+
+// Phones collapse the nav behind a toggle; label it with the page you are on,
+// so the control says both where you are and what opening it is for.
+const current = [...pages, ...elsewhere].find((l) => isCurrent(l.href));
+const menuLabel = current ? current.label : 'Menu';
 ---
 <!doctype html>
 <html lang="en">
@@ -63,16 +68,34 @@ const elsewhere = [
           width="400"
           height="400"
         />
-        <nav class="links" aria-label="Site">
-          <span class="divider" role="presentation"></span>
-          {pages.map((l) => (
-            <a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a>
-          ))}
-          <span class="divider" role="presentation"></span>
-          {elsewhere.map((l) => (
-            <a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a>
-          ))}
-        </nav>
+        <details class="menu" open>
+          <summary>
+            <span class="menu-label">{menuLabel}</span>
+            <span class="chevron" aria-hidden="true"></span>
+          </summary>
+          <nav class="links" aria-label="Site">
+            <span class="divider" role="presentation"></span>
+            {pages.map((l) => (
+              <a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a>
+            ))}
+            <span class="divider" role="presentation"></span>
+            {elsewhere.map((l) => (
+              <a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a>
+            ))}
+          </nav>
+        </details>
+        <!-- Runs inline, right after the element, so the menu is already closed
+             by the time a phone paints it. Without JS the nav stays open, which
+             is the layout as it was before the toggle existed. -->
+        <script is:inline>
+          (() => {
+            const menu = document.querySelector('.menu');
+            const phone = matchMedia('(max-width: 48rem)');
+            const sync = () => { menu.open = !phone.matches; };
+            sync();
+            phone.addEventListener('change', sync);
+          })();
+        </script>
       </aside>
       <main>
         <slot />

@@ -79,6 +79,8 @@ body {
   text-underline-offset: 3px;
 }
 
+.sidebar .menu > summary { display: none; }
+
 .sidebar .links {
   display: flex;
   flex-direction: column;
@@ -107,6 +109,9 @@ main {
 @media (max-width: 48rem) {
   .layout {
     flex-direction: column;
+    /* Stacked, flex-start would shrink the header to the width of its own
+       text — the menu row needs the full column to be a comfortable target. */
+    align-items: stretch;
     gap: 1.75rem;
     margin-top: 2rem;
   }
@@ -131,9 +136,35 @@ main {
     background: none;
     margin: 0;
   }
-  /* The rule above "Home" separates the portrait from the links; stacked, the
-     portrait already does that on its own. */
+  /* The rule above "Home" separates the portrait from the links; with the
+     portrait gone there is nothing above it to separate. */
   .sidebar .links .divider:first-child { display: none; }
+
+  /* The whole nav collapses behind a toggle labelled with the current page. */
+  .sidebar .menu > summary {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    /* Full width and roughly a fingertip tall, so the tap target is the whole
+       row rather than the few characters of the label. */
+    padding: 0.6rem 0;
+    color: var(--fg);
+    cursor: pointer;
+    list-style: none;
+  }
+  .sidebar .menu > summary::-webkit-details-marker { display: none; }
+
+  .sidebar .menu .chevron {
+    width: 0;
+    height: 0;
+    border-left: 0.28rem solid transparent;
+    border-right: 0.28rem solid transparent;
+    border-top: 0.32rem solid var(--muted);
+    transition: transform 0.15s;
+  }
+  .sidebar .menu[open] .chevron { transform: rotate(180deg); }
+
+  .sidebar .menu[open] .links { margin-top: 0.6rem; }
 }
 
 h1 {
