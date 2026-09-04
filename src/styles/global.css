@@ -61,6 +61,14 @@ body {
   font-size: 0.9rem;
 }
 
+.sidebar .portrait {
+  width: 5.5rem;
+  height: 5.5rem;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--rule);
+}
+
 .sidebar a {
   color: var(--fg);
   text-decoration: none;
