@@ -117,10 +117,9 @@ main {
     gap: 1rem;
     font-size: 0.85rem;
   }
-  .sidebar .portrait {
-    width: 3.25rem;
-    height: 3.25rem;
-  }
+  /* The portrait is a desktop flourish; on a phone it only pushes the page
+     down, so the header is links alone. */
+  .sidebar .portrait { display: none; }
   .sidebar .links {
     flex-direction: row;
     flex-wrap: wrap;
