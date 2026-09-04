@@ -62,8 +62,8 @@ body {
 }
 
 .sidebar .portrait {
-  width: 4.75rem;
-  height: 4.75rem;
+  width: 5.5rem;
+  height: 5.5rem;
   border-radius: 50%;
   object-fit: cover;
   background: var(--rule);
