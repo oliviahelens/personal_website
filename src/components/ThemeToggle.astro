@@ -1,7 +1,7 @@
 ---
 // A small switch that overrides the OS colour scheme. The knob is a filled
-// disc in light mode; in dark mode a disc of background colour slides over it
-// and bites it into a crescent.
+// disc in light mode; in dark mode it slides to the far end and an inset
+// shadow bites a crescent out of it.
 ---
 <button
   id="theme-toggle"
@@ -33,11 +33,19 @@
   }
 
   .track {
+    /* One set of numbers drives the whole shape, so the knob's inset, its
+       travel and the track stay in proportion however these are tuned. */
+    --track-w: 2.05rem;
+    --track-h: 1.05rem;
+    --knob: 0.62rem;
+    --edge: 1px;
+    --inset: calc((var(--track-h) - 2 * var(--edge) - var(--knob)) / 2);
+
     position: relative;
     display: block;
-    width: 2.05rem;
-    height: 1.05rem;
-    border: 1px solid var(--rule);
+    width: var(--track-w);
+    height: var(--track-h);
+    border: var(--edge) solid var(--rule);
     border-radius: 999px;
     transition: border-color 0.25s ease;
   }
@@ -51,42 +59,34 @@
     outline-offset: 3px;
   }
 
+  /* The knob has no background of its own: both the sun and the moon are drawn
+     entirely by one inset shadow, which is clipped to the circle and so can
+     never spill over the track's rule. Spread equal to the radius fills the
+     disc (with a pixel to spare, so no pinhole survives rounding); trading
+     that spread for a diagonal offset wanes it to a crescent,
+     and box-shadow interpolates between the two. */
   .knob {
     position: absolute;
-    top: 50%;
-    left: 0.17rem;
-    width: 0.62rem;
-    height: 0.62rem;
-    margin-top: -0.31rem;
+    top: var(--inset);
+    left: var(--inset);
+    width: var(--knob);
+    height: var(--knob);
     border-radius: 50%;
-    background: var(--fg);
-    transition: transform 0.25s ease, background-color 0.25s ease;
+    box-shadow: inset 0 0 0 calc(var(--knob) / 2 + 1px) var(--fg);
+    transition: transform 0.28s ease, box-shadow 0.28s ease;
   }
 
-  /* The crescent: a background-coloured disc parked off the knob, which slides
-     over it when the switch is on. */
-  .knob::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    background: var(--bg);
-    transform: translate(52%, -38%) scale(0.95);
-    opacity: 0;
-    transition: opacity 0.25s ease, background-color 0.25s ease;
-  }
-
+  /* Knob at the far end, mirroring its inset at the near end. */
   .theme-toggle[aria-checked='true'] .knob {
-    transform: translateX(0.86rem);
-  }
-  .theme-toggle[aria-checked='true'] .knob::after {
-    opacity: 1;
+    transform: translateX(
+      calc(var(--track-w) - 2 * var(--edge) - var(--knob) - 2 * var(--inset))
+    );
+    box-shadow: inset 0.22rem -0.22rem 0 0 var(--fg);
   }
 
   @media (prefers-reduced-motion: reduce) {
     .track,
-    .knob,
-    .knob::after {
+    .knob {
       transition: none;
     }
   }
