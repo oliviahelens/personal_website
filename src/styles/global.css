@@ -3,14 +3,20 @@
    values are written twice on purpose — once for "OS says dark and nothing
    overrides it", once for "the switch says dark" — because a custom property
    block cannot be shared across a media query boundary. */
+/* Light palette sampled from the Substack, so the two read as one site: a warm
+   cream page with dark olive text rather than black on near-white. --muted is
+   the one departure — the blog's own #878479 lands at 3.6:1 on this
+   background, which is under AA for the small text this token is used for
+   (nav, captions, authors), so it is darkened to hold roughly the contrast the
+   site had before. */
 :root {
   --measure: 42rem;
   color-scheme: light;
-  --bg: #fbfaf7;
-  --fg: #1a1a1a;
-  --muted: #6b6b6b;
-  --rule: #d8d4cb;
-  --link: #1a1a1a;
+  --bg: #fffbec;
+  --fg: #575336;
+  --muted: #6e6b5a;
+  --rule: #e7e2d4;
+  --link: #575336;
 }
 
 @media (prefers-color-scheme: dark) {
