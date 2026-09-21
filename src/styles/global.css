@@ -3,12 +3,22 @@
    values are written twice on purpose — once for "OS says dark and nothing
    overrides it", once for "the switch says dark" — because a custom property
    block cannot be shared across a media query boundary. */
-/* Light palette sampled from the Substack, so the two read as one site: a warm
-   cream page with dark olive text rather than black on near-white. --muted is
-   the one departure — the blog's own #878479 lands at 3.6:1 on this
-   background, which is under AA for the small text this token is used for
-   (nav, captions, authors), so it is darkened to hold roughly the contrast the
-   site had before. */
+/* Palette. Light is sampled from the Substack, so the two properties read as
+   one site: a warm cream page with dark olive text rather than black on
+   near-white. Dark inverts that, though only the cream carries over exactly:
+   it becomes the text. The page is not the light mode's olive — that colour
+   sits at L* 35, a mid-tone, and as a full-bleed field it reads as khaki
+   rather than as a dark mode. It is instead that olive's hue (53 degrees,
+   against the browner 33 dark mode used to sit at) taken down to L* 11, which
+   keeps both themes in one family without pretending a text colour can be a
+   background.
+
+   --muted is the one value not taken from the blog. Its own secondary grey
+   (#878479) lands at 3.6:1 on the cream, under the 4.5:1 AA wants for the
+   small text this token carries here — the sidebar nav, book authors, artwork
+   captions and ratings. On the blog that grey sets bylines only. Both themes'
+   muted tones are instead solved to about 5:1 against their own background,
+   on the same hue. */
 :root {
   --measure: 42rem;
   color-scheme: light;
@@ -22,21 +32,21 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
-    --bg: #1a1611;
-    --fg: #ece7dc;
-    --muted: #8e8a80;
-    --rule: #2e2c26;
-    --link: #ece7dc;
+    --bg: #1f1d14;
+    --fg: #fffbec;
+    --muted: #948c71;
+    --rule: #333024;
+    --link: #fffbec;
   }
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #1a1611;
-  --fg: #ece7dc;
-  --muted: #8e8a80;
-  --rule: #2e2c26;
-  --link: #ece7dc;
+  --bg: #1f1d14;
+  --fg: #fffbec;
+  --muted: #948c71;
+  --rule: #333024;
+  --link: #fffbec;
 }
 
 @font-face {
