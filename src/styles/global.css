@@ -1,5 +1,11 @@
+/* Theme. The OS preference is the default; the switch in the sidebar sets
+   data-theme on <html> to override it, and that choice is remembered. The dark
+   values are written twice on purpose — once for "OS says dark and nothing
+   overrides it", once for "the switch says dark" — because a custom property
+   block cannot be shared across a media query boundary. */
 :root {
   --measure: 42rem;
+  color-scheme: light;
   --bg: #fbfaf7;
   --fg: #1a1a1a;
   --muted: #6b6b6b;
@@ -8,13 +14,23 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
     --bg: #1a1611;
     --fg: #ece7dc;
     --muted: #8e8a80;
     --rule: #2e2c26;
     --link: #ece7dc;
   }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #1a1611;
+  --fg: #ece7dc;
+  --muted: #8e8a80;
+  --rule: #2e2c26;
+  --link: #ece7dc;
 }
 
 @font-face {
@@ -40,6 +56,13 @@ body {
   color: var(--fg);
   font-family: 'Iowan Old Style', 'EB Garamond', Georgia, 'Times New Roman', serif;
   line-height: 1.6;
+  /* Flipping the switch swaps every token at once; easing the two largest
+     areas keeps that from reading as a flash. */
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body { transition: none; }
 }
 
 .layout {
@@ -77,6 +100,14 @@ body {
   text-decoration: underline;
   text-decoration-thickness: 0.5px;
   text-underline-offset: 3px;
+}
+
+/* On desktop the nav and the theme switch just stack, with the same rhythm as
+   the rest of the sidebar. */
+.sidebar .nav-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
 }
 
 .sidebar .menu > summary { display: none; }
@@ -165,6 +196,24 @@ main {
   .sidebar .menu[open] .chevron { transform: rotate(180deg); }
 
   .sidebar .menu[open] .links { margin-top: 0.6rem; }
+
+  /* Switch to the right of the menu label, sharing its row. */
+  .sidebar .nav-row {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .sidebar .nav-row .menu {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .sidebar .nav-row .theme-toggle {
+    flex: 0 0 auto;
+    width: auto;
+    /* Lines the knob up with the menu label, which sits lower thanks to the
+       taller tap target on its row. */
+    padding: 0.75rem 0 0;
+  }
 }
 
 h1 {

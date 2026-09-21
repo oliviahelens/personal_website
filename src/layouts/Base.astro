@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import Analytics from '../components/Analytics.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
 
 interface Props {
   title: string;
@@ -45,6 +46,16 @@ const menuLabel = current ? current.label : 'Menu';
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Before the first paint, so a remembered choice never flashes the other
+         theme. With no stored choice (or no JS) the CSS follows the OS. -->
+    <script is:inline>
+      (() => {
+        try {
+          const t = localStorage.getItem('theme');
+          if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+        } catch {}
+      })();
+    </script>
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
     <link rel="canonical" href={canonical} />
@@ -68,6 +79,9 @@ const menuLabel = current ? current.label : 'Menu';
           width="400"
           height="400"
         />
+        <!-- Grouped so the phone layout can sit the switch on the menu row
+             instead of spending a whole row of the header on it. -->
+        <div class="nav-row">
         <details class="menu" open>
           <summary>
             <span class="menu-label">{menuLabel}</span>
@@ -96,6 +110,8 @@ const menuLabel = current ? current.label : 'Menu';
             phone.addEventListener('change', sync);
           })();
         </script>
+        <ThemeToggle />
+        </div>
       </aside>
       <main>
         <slot />

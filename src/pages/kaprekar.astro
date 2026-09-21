@@ -92,10 +92,13 @@ import Base from '../layouts/Base.astro';
      These rules (and the accent tokens) must be global to reach them; the
      .kap-* names appear only on this page, so it stays effectively local. -->
 <style is:global>
+  /* Same two-branch shape as the theme tokens in global.css: OS preference
+     unless the sidebar switch overrides it. */
   .kap { --k-glow: rgba(70, 55, 35, 0.30); }
   @media (prefers-color-scheme: dark) {
-    .kap { --k-glow: rgba(240, 232, 216, 0.6); }
+    :root:not([data-theme='light']) .kap { --k-glow: rgba(240, 232, 216, 0.6); }
   }
+  :root[data-theme='dark'] .kap { --k-glow: rgba(240, 232, 216, 0.6); }
 
   @keyframes kap-pulse {
     0%, 100% { box-shadow: 0 0 4px 0 var(--k-glow); }
