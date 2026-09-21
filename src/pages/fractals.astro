@@ -257,8 +257,8 @@ import Base from '../layouts/Base.astro';
   const ctx = canvas.getContext('2d');
 
   // ---- palette from the site's CSS variables (light/dark aware) -------------
-  let fg = '#1a1a1a', bg = '#fbfaf7';
-  let fgRgb = [26, 26, 26], bgRgb = [251, 250, 247];
+  let fg = '#575336', bg = '#fffbec';
+  let fgRgb = [87, 83, 54], bgRgb = [255, 251, 236];
   function hexToRgb(h) {
     h = h.replace('#', '').trim();
     if (h.length === 3) h = h.split('').map((c) => c + c).join('');
