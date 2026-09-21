@@ -848,6 +848,9 @@ import Base from '../layouts/Base.astro';
     clearTimeout(rt);
     rt = window.setTimeout(() => { sizeCanvas(); renderCurrent(); }, 160);
   });
-  const mq = window.matchMedia('(prefers-color-scheme: dark)');
-  mq.addEventListener('change', () => { readColors(); renderCurrent(); });
+  // Repaint on a palette change from either source: the OS preference, or
+  // the sidebar switch (which fires 'themechange').
+  const repaint = () => { readColors(); renderCurrent(); };
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', repaint);
+  window.addEventListener('themechange', repaint);
 </script>

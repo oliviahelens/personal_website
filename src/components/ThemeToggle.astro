@@ -1,0 +1,126 @@
+---
+// A small switch that overrides the OS colour scheme. The knob is a filled
+// disc in light mode; in dark mode a disc of background colour slides over it
+// and bites it into a crescent.
+---
+<button
+  id="theme-toggle"
+  class="theme-toggle"
+  type="button"
+  role="switch"
+  aria-checked="false"
+  aria-label="Dark mode"
+  title="Toggle dark mode"
+>
+  <span class="track" aria-hidden="true"><span class="knob"></span></span>
+</button>
+
+<style>
+  .theme-toggle {
+    /* A bare control: no button chrome, just the track it draws itself. */
+    -webkit-appearance: none;
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0;
+    margin: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    /* Wide enough to be an easy target, but only the track is visible. */
+    width: 2.6rem;
+  }
+
+  .track {
+    position: relative;
+    display: block;
+    width: 2.05rem;
+    height: 1.05rem;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    transition: border-color 0.25s ease;
+  }
+  .theme-toggle:hover .track { border-color: var(--muted); }
+
+  .theme-toggle:focus-visible {
+    outline: none;
+  }
+  .theme-toggle:focus-visible .track {
+    outline: 1px solid var(--muted);
+    outline-offset: 3px;
+  }
+
+  .knob {
+    position: absolute;
+    top: 50%;
+    left: 0.17rem;
+    width: 0.62rem;
+    height: 0.62rem;
+    margin-top: -0.31rem;
+    border-radius: 50%;
+    background: var(--fg);
+    transition: transform 0.25s ease, background-color 0.25s ease;
+  }
+
+  /* The crescent: a background-coloured disc parked off the knob, which slides
+     over it when the switch is on. */
+  .knob::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: var(--bg);
+    transform: translate(52%, -38%) scale(0.95);
+    opacity: 0;
+    transition: opacity 0.25s ease, background-color 0.25s ease;
+  }
+
+  .theme-toggle[aria-checked='true'] .knob {
+    transform: translateX(0.86rem);
+  }
+  .theme-toggle[aria-checked='true'] .knob::after {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .track,
+    .knob,
+    .knob::after {
+      transition: none;
+    }
+  }
+</style>
+
+<script is:inline>
+  (() => {
+    const btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+    const root = document.documentElement;
+    const system = matchMedia('(prefers-color-scheme: dark)');
+    // No stored choice means we are still following the OS.
+    const current = () => root.dataset.theme || (system.matches ? 'dark' : 'light');
+    const sync = () => btn.setAttribute('aria-checked', String(current() === 'dark'));
+
+    sync();
+
+    system.addEventListener('change', () => {
+      if (!root.dataset.theme) {
+        sync();
+        window.dispatchEvent(new Event('themechange'));
+      }
+    });
+
+    btn.addEventListener('click', () => {
+      const next = current() === 'dark' ? 'light' : 'dark';
+      root.dataset.theme = next;
+      try {
+        localStorage.setItem('theme', next);
+      } catch {}
+      sync();
+      // Canvases (fractals, Game of Life) read their palette from the CSS
+      // variables and need to know the tokens moved under them.
+      window.dispatchEvent(new Event('themechange'));
+    });
+  })();
+</script>
