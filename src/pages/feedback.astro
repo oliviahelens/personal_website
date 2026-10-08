@@ -3,7 +3,7 @@ import Base from '../layouts/Base.astro';
 
 // Web3Forms delivers each submission to the inbox the key was created for, so
 // the address never appears in the page. The key itself is safe to publish.
-const WEB3FORMS_KEY = 'YOUR_WEB3FORMS_ACCESS_KEY';
+const WEB3FORMS_KEY = '916818d9-ec55-4eb7-8417-b04d07f34881';
 ---
 <Base
   title="Feedback — Olivia H. Scharfman"
@@ -15,8 +15,6 @@ const WEB3FORMS_KEY = 'YOUR_WEB3FORMS_ACCESS_KEY';
 
   <form id="fb" class="fb" action="https://api.web3forms.com/submit" method="POST">
     <input type="hidden" name="access_key" value={WEB3FORMS_KEY} />
-    <input type="hidden" name="subject" value="Anonymous feedback from oliviahelens.com" />
-    <input type="hidden" name="from_name" value="Anonymous" />
     <!-- Honeypot: hidden from people, filled in by bots, rejected by Web3Forms. -->
     <input type="checkbox" name="botcheck" class="fb-hp" tabindex="-1" autocomplete="off" />
     <label class="fb-label" for="fb-message">Message</label>
