@@ -1,0 +1,86 @@
+---
+import Base from '../layouts/Base.astro';
+
+// Web3Forms delivers each submission to the inbox the key was created for, so
+// the address never appears in the page. The key itself is safe to publish.
+const WEB3FORMS_KEY = 'YOUR_WEB3FORMS_ACCESS_KEY';
+---
+<Base
+  title="Feedback — Olivia H. Scharfman"
+  description="Send Olivia H. Scharfman anonymous feedback."
+>
+  <h1>Anonymous Feedback</h1>
+
+  <p>Tell me anything. No name or email is asked for or sent.</p>
+
+  <form id="fb" class="fb" action="https://api.web3forms.com/submit" method="POST">
+    <input type="hidden" name="access_key" value={WEB3FORMS_KEY} />
+    <input type="hidden" name="subject" value="Anonymous feedback from oliviahelens.com" />
+    <input type="hidden" name="from_name" value="Anonymous" />
+    <!-- Honeypot: hidden from people, filled in by bots, rejected by Web3Forms. -->
+    <input type="checkbox" name="botcheck" class="fb-hp" tabindex="-1" autocomplete="off" />
+    <label class="fb-label" for="fb-message">Message</label>
+    <textarea id="fb-message" name="message" rows="8" required></textarea>
+    <button type="submit">Send</button>
+    <p id="fb-status" class="fb-status" aria-live="polite"></p>
+  </form>
+</Base>
+
+<style>
+  .fb { display: flex; flex-direction: column; gap: 0.6rem; margin: 1.5rem 0; }
+  .fb-hp { display: none; }
+  .fb-label { font-size: 0.9rem; color: var(--muted); }
+  .fb textarea {
+    font: inherit;
+    color: var(--fg);
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 0.5rem 0.6rem;
+    resize: vertical;
+  }
+  .fb textarea:focus { outline: none; border-color: var(--muted); }
+  .fb button {
+    align-self: flex-start;
+    font-family: inherit;
+    font-size: 0.85rem;
+    color: var(--fg);
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 0.32rem 0.9rem;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .fb button:hover { border-color: var(--muted); }
+  .fb button:disabled { opacity: 0.45; cursor: default; }
+  .fb-status { min-height: 1.4rem; margin: 0; font-size: 0.95rem; color: var(--muted); }
+</style>
+
+<!-- Without JS the form still posts and Web3Forms shows its own thank-you page. -->
+<script>
+  const form = document.getElementById('fb') as HTMLFormElement;
+  const status = document.getElementById('fb-status')!;
+  const button = form.querySelector('button')!;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    button.disabled = true;
+    status.textContent = 'Sending…';
+    try {
+      const res = await fetch(form.action, {
+        method: 'POST',
+        headers: { Accept: 'application/json' },
+        body: new FormData(form),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.message);
+      form.reset();
+      status.textContent = 'Sent. Thank you.';
+    } catch {
+      status.textContent = 'Something went wrong. Please try again.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+</script>
